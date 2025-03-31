@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { TokenBalances } from "@/components/TokenBalances";
-import { WelcomeHero } from "@/components/WelcomeHero";
 
 export default function App() {
   const { isAuthenticated } = useAuth();
