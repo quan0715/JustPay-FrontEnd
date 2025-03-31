@@ -1,5 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { formatAddress } from "@/lib/utils";
+import { Network } from "alchemy-sdk";
+import { BalanceDataCard } from "./BalanceDataCard";
 
 export function AuthStatus() {
   const { isAuthenticated, isLoading, address, isConnected } = useAuth();
@@ -27,6 +29,27 @@ export function AuthStatus() {
       <div className="text-xs text-gray-500">
         錢包地址: {formatAddress(address)}
       </div>
+      <BalanceDataCard
+        walletAddress={address ?? ""}
+        network={Network.ETH_SEPOLIA}
+        tokenContractAddress={"0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"}
+        tokenDecimals={6}
+        tokenName="USDC"
+      />
+      <BalanceDataCard
+        walletAddress={address ?? ""}
+        network={Network.BASE_SEPOLIA}
+        tokenContractAddress={"0x036CbD53842c5426634e7929541eC2318f3dCF7e"}
+        tokenDecimals={6}
+        tokenName="USDC"
+      />
+      <BalanceDataCard
+        walletAddress={address ?? ""}
+        network={Network.LINEA_SEPOLIA}
+        tokenContractAddress={"0x5425890298aed601595a70ab815c96711a31bc65"}
+        tokenDecimals={6}
+        tokenName="USDC"
+      />
     </div>
   );
 }

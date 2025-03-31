@@ -29,7 +29,7 @@ const handler = NextAuth({
             process.env.NEXTAUTH_URL ?? "http://localhost:3000"
           );
           const siweMessage = new SiweMessage(credentials.message);
-          console.log("siweMessage", siweMessage);
+          // console.log(siweMessage);
           const result = await siweMessage.verify({
             signature: credentials.signature,
             domain: nextAuthUrl.host,
@@ -50,10 +50,10 @@ const handler = NextAuth({
   ],
   session: {
     strategy: "jwt",
-    maxAge: 60 * 3, // 10 分鐘
+    maxAge: 60 * 60, // 1 小時
   },
   jwt: {
-    maxAge: 60 * 3, // 10 分鐘
+    maxAge: 60 * 60, // 1 小時
   },
   callbacks: {
     async session({ session, token }) {
