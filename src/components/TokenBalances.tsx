@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import USDCLogo from "cryptocurrency-icons/svg/icon/usdc.svg";
-
+import { RefreshCw } from "lucide-react";
 export function TokenBalances() {
   const { address, isAuthenticated } = useAuth();
 
@@ -47,7 +47,10 @@ export function TokenBalances() {
       <div className="flex flex-col items-center justify-start gap-0 py-6">
         <p className="text-xl font-bold">總 USDC 餘額</p>
         <h1 className="text-6xl font-thin py-4 ">USDC ${totalBalance}</h1>
-        <Button variant="outline" onClick={() => refetch()}></Button>
+        <Button variant="outline" onClick={() => refetch()}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          重新整理
+        </Button>
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
