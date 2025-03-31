@@ -12,6 +12,7 @@ import {
   EthSepoliaToken,
   BaseSepoliaToken,
   LineaSepoliaToken,
+  AvalancheFujiToken,
 } from "@/models/token";
 import {
   Card,
@@ -27,7 +28,12 @@ export function TokenBalances() {
 
   const { totalBalance, chainBalances, isLoading, refetch } = useTokenBalance({
     walletAddress: address,
-    chainTokens: [EthSepoliaToken, BaseSepoliaToken, LineaSepoliaToken],
+    chainTokens: [
+      EthSepoliaToken,
+      BaseSepoliaToken,
+      LineaSepoliaToken,
+      AvalancheFujiToken,
+    ],
     enabled: !!address && isAuthenticated,
   });
 

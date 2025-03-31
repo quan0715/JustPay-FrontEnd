@@ -16,6 +16,8 @@ function getNetworkRpcUrl(network: Network): string {
       return `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
     case Network.LINEA_SEPOLIA:
       return `https://linea-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+    case Network.AVAX_FUJI:
+      return `https://avax-fuji.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
     default:
       return `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
   }
@@ -135,6 +137,8 @@ function getNetworkDisplayName(network: Network): string {
       return "Base Sepolia";
     case Network.LINEA_SEPOLIA:
       return "Linea Sepolia";
+    case Network.AVAX_FUJI:
+      return "Avalanche Fuji";
     default:
       return network.toString();
   }

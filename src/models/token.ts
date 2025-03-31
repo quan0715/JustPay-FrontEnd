@@ -34,6 +34,12 @@ export const BaseSepoliaToken: ChainToken = {
 
 export const LineaSepoliaToken: ChainToken = {
   token: USDC,
-  contractAddress: "0x5425890298aed601595a70ab815c96711a31bc65",
+  contractAddress: "0xfece4462d57bd51a6a552365a011b95f0e16d9b7",
   network: Network.LINEA_SEPOLIA,
+};
+
+export const AvalancheFujiToken: ChainToken = {
+  token: USDC,
+  contractAddress: "0x5425890298aed601595a70ab815c96711a31bc65",
+  network: Network.AVAX_FUJI,
 };
