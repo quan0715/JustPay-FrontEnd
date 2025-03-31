@@ -1,18 +1,7 @@
 "use client";
 // import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+
 import "@rainbow-me/rainbowkit/styles.css";
-import { getSession } from "next-auth/react";
-import { getToken } from "next-auth/jwt";
 import { AuthStatus } from "@/components/AuthStatus";
 
 export default function Home() {
