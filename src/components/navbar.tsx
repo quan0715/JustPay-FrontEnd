@@ -19,7 +19,7 @@ export default function Navbar() {
             height={32}
             className="rounded-full"
           />
-          <h1 className="text-2xl font-bold">Just Pay</h1>
+          <h1 className="text-xl font-bold">Just Pay</h1>
         </div>
         <ConnectButton label="連接錢包" />
       </div>
