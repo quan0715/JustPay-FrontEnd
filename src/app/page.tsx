@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { TokenBalances } from "@/components/TokenBalances";
+import { USDCManager } from "@/components/USDCManager";
 
 export default function App() {
   const { isAuthenticated } = useAuth();
@@ -13,7 +13,8 @@ export default function App() {
 
         {isAuthenticated && (
           <div className="space-y-8">
-            <TokenBalances />
+            {/* <TokenBalances /> */}
+            <USDCManager />
           </div>
         )}
       </div>

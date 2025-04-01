@@ -67,7 +67,7 @@ export function TokenBalances() {
             isLoading={isLoading}
           >
             <Key className="text-md">{balance.chainName}</Key>
-            <Value className="text-xl font-bold">
+            <Value className="text-xl font-thin">
               {balance.formattedBalance} USDC
             </Value>
             <Action>
