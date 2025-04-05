@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import RainbowKitProvider from "@/providers/RainbowKitProvider";
 import Navbar from "@/components/Navbar";
+import { Toaster } from "@/components/ui/sonner";
+// import { ThemeProvider } from "@/providers/ThemeProvider";
+import { ThemeProvider } from "next-themes";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,14 +27,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RainbowKitProvider>
-          <Navbar />
-          {children}
-        </RainbowKitProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <RainbowKitProvider>
+            <Navbar />
+            {children}
+            <Toaster />
+          </RainbowKitProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

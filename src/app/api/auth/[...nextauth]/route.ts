@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
-
+import { getUserData, createUserData } from "@/app/_actions/userDataAction";
 declare module "next-auth" {
   interface Session {
     address?: string;
@@ -35,10 +35,20 @@ const handler = NextAuth({
             domain: nextAuthUrl.host,
           });
           if (result.success) {
-            return {
-              id: siweMessage.address,
-              address: siweMessage.address,
-            };
+            const address = siweMessage.address;
+            const userData = await getUserData(address);
+            if (userData) {
+              return {
+                id: siweMessage.address,
+                address: siweMessage.address,
+              };
+            } else {
+              await createUserData(address);
+              return {
+                id: siweMessage.address,
+                address: siweMessage.address,
+              };
+            }
           }
           return null;
         } catch (error) {

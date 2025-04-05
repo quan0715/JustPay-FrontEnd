@@ -1,32 +1,32 @@
 "use client";
 
-import { useEffect } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { useEffect } from "react";
 
-export interface QrScannerProps {
+interface QrScannerProps {
   onResult: (result: string) => void;
 }
 
 const QrScanner = ({ onResult }: QrScannerProps) => {
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
+    const qrScanner = new Html5QrcodeScanner(
       "qr-reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      /* verbose= */ false
+      { fps: 10, qrbox: 250 },
+      false
     );
 
-    scanner.render(
-      (decodedText: string) => {
-        onResult(decodedText);
-        scanner.clear();
+    qrScanner.render(
+      (result) => {
+        onResult(result);
+        qrScanner.clear();
       },
-      (errorMessage: string) => {
-        console.warn(errorMessage);
+      (error) => {
+        console.error(error);
       }
     );
 
     return () => {
-      scanner.clear();
+      qrScanner.clear();
     };
   }, [onResult]);
 

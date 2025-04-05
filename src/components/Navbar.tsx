@@ -1,6 +1,9 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Image from "next/image";
+"use client";
 
+import Link from "next/link";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 // Stick at the top of the page
 // Make Bg-Transparent with backdrop-blur-sm
 
@@ -8,21 +11,56 @@ import Image from "next/image";
 // Add Connect Button
 
 export default function Navbar() {
+  const { isAuthenticated } = useAuth();
+
+  // 僅在認證後顯示導航欄
+  if (!isAuthenticated) return null;
+
   return (
-    <div className="sticky top-0 z-50 bg-transparent backdrop-blur-sm">
-      <div className="flex justify-between items-center p-4">
-        <div className="flex items-center space-x-2">
-          <Image
-            src="/logo.png"
-            alt="Just Pay Logo"
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
-          <h1 className="text-xl font-bold">Just Pay</h1>
+    <header className="w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center">
+        <div className="mr-4 flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2 p-2">
+            <Image
+              src="/logo.png"
+              alt="JustPay Logo"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <span className="font-bold">JustPay</span>
+          </Link>
+
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link
+              href="/"
+              className="transition-colors hover:text-foreground/80"
+            >
+              首頁
+            </Link>
+            <Link
+              href="/transactions"
+              className="transition-colors hover:text-foreground/80"
+            >
+              交易紀錄
+            </Link>
+            <Link
+              href="/settings"
+              className="transition-colors hover:text-foreground/80"
+            >
+              設定
+            </Link>
+          </nav>
         </div>
-        <ConnectButton label="連接錢包" />
+
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <ConnectButton
+            chainStatus="icon"
+            accountStatus="address"
+            showBalance={false}
+          />
+        </div>
       </div>
-    </div>
+    </header>
   );
 }

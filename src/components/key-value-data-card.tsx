@@ -37,7 +37,9 @@ function Key({ children, className }: KeyProps) {
 
 function Value({ children, className }: ValueProps) {
   // value default font size is sm
-  return <p className={cn("font-semibold text-sm", className)}>{children}</p>;
+  return (
+    <div className={cn("font-semibold text-sm", className)}>{children}</div>
+  );
 }
 
 function Action({ children, className }: ActionProps) {
@@ -147,7 +149,7 @@ export function KeyValueDataCard({
         {isLoading ? (
           <Skeleton />
         ) : (
-          <div className="flex flex-col gap-0">
+          <div className="w-full flex flex-col gap-0">
             {keyChildren[0] && keyChildren[0]}
             {valueChildren[0] && valueChildren[0]}
           </div>
