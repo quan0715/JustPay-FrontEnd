@@ -9,6 +9,8 @@ export type Token = {
 
 export type ChainToken = {
   // different networks have different contract addresses
+  CCTVDomain: number;
+  TransmitterContractAddress: string;
   chainId: number;
   token: Token;
   contractAddress: string;
@@ -24,6 +26,8 @@ export const USDC: Token = {
 };
 
 export const EthSepoliaToken: ChainToken = {
+  CCTVDomain: 0,
+  TransmitterContractAddress: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
   chainId: 11155111,
   token: USDC,
   contractAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
@@ -32,6 +36,8 @@ export const EthSepoliaToken: ChainToken = {
 };
 
 export const BaseSepoliaToken: ChainToken = {
+  CCTVDomain: 6,
+  TransmitterContractAddress: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
   chainId: 84532,
   token: USDC,
   contractAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
@@ -40,6 +46,8 @@ export const BaseSepoliaToken: ChainToken = {
 };
 
 export const LineaSepoliaToken: ChainToken = {
+  CCTVDomain: 11,
+  TransmitterContractAddress: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
   chainId: 59141,
   token: USDC,
   contractAddress: "0xfece4462d57bd51a6a552365a011b95f0e16d9b7",
@@ -48,6 +56,8 @@ export const LineaSepoliaToken: ChainToken = {
 };
 
 export const AvalancheFujiToken: ChainToken = {
+  CCTVDomain: 1,
+  TransmitterContractAddress: "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
   chainId: 43113,
   token: USDC,
   contractAddress: "0x5425890298aed601595a70ab815c96711a31bc65",
@@ -56,10 +66,10 @@ export const AvalancheFujiToken: ChainToken = {
 };
 
 export const ChainTokenList = [
-  EthSepoliaToken,
   BaseSepoliaToken,
-  LineaSepoliaToken,
   AvalancheFujiToken,
+  // LineaSepoliaToken,
+  EthSepoliaToken,
 ];
 
 export const getChainTokenDataByName = (name: string) => {

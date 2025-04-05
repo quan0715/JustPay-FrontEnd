@@ -14,6 +14,7 @@ export async function getUserData(address: string) {
   }
   return {
     address: user.address ?? "",
+    spenderAddress: user.spenderAddress ?? "",
     allowances: user.allowances ?? [],
   } as User;
 }
@@ -23,6 +24,7 @@ export async function createUserData(address: string) {
   const db = client.db("user");
   const user = await db.collection("user").insertOne({
     address: address,
+    spenderAddress: "",
     allowances: [],
   });
   return user;
@@ -30,6 +32,7 @@ export async function createUserData(address: string) {
 
 export async function updateUserData(user: User) {
   try {
+    console.log("updateUserData", user);
     const client = await clientPromise;
     const db = client.db("user");
     const result = await db.collection("user").updateOne(
@@ -38,6 +41,7 @@ export async function updateUserData(user: User) {
       },
       {
         $set: {
+          spenderAddress: user.spenderAddress,
           allowances: user.allowances,
         },
       }

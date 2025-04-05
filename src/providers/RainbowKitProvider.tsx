@@ -5,12 +5,7 @@ import {
   RainbowKitProvider as RainbowKit,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import {
-  avalancheFuji,
-  baseSepolia,
-  lineaSepolia,
-  sepolia,
-} from "wagmi/chains";
+import { avalancheFuji, baseSepolia, sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { RainbowKitSiweNextAuthProvider } from "@rainbow-me/rainbowkit-siwe-next-auth";
@@ -41,7 +36,7 @@ export default function RainbowKitProvider({
         appName: APP_NAME,
         projectId: PROJECT_ID,
         ssr: true,
-        chains: [sepolia, baseSepolia, lineaSepolia, avalancheFuji],
+        chains: [sepolia, baseSepolia, avalancheFuji],
       });
     }
 
@@ -50,7 +45,7 @@ export default function RainbowKitProvider({
       appName: APP_NAME,
       projectId: PROJECT_ID,
       ssr: true,
-      chains: [sepolia, baseSepolia, lineaSepolia, avalancheFuji],
+      chains: [sepolia, baseSepolia, avalancheFuji],
     });
   }, []);
 

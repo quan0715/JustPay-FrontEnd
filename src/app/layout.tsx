@@ -4,7 +4,6 @@ import "./globals.css";
 import RainbowKitProvider from "@/providers/RainbowKitProvider";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
-// import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ThemeProvider } from "next-themes";
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,11 +1,12 @@
 import { useUserTokenBalance } from "./useUserTokenBalance";
 import { ChainToken } from "@/models/token";
+import { ethers } from "ethers";
 type prepareProxyActionStatus = "loading" | "error" | "success";
 type prepareProxyActionResult = {
   status: prepareProxyActionStatus;
   message: string;
   result: {
-    amount: string;
+    amount: bigint;
     sourceChain: ChainToken;
   }[];
 };
@@ -23,7 +24,9 @@ export const usePrepareProxyAction = () => {
     totalAmount: string;
     sourceChain: ChainToken[];
   }) => {
-    const totalAmountNumber = parseFloat(totalAmount);
+    // 轉換為BigInt以便統一類型計算
+    const totalAmountBigInt = ethers.parseUnits(totalAmount, 6);
+
     // 分配 sourceChain 的餘額，來完成預期交易
     if (isBalancesLoading) {
       return {
@@ -46,18 +49,37 @@ export const usePrepareProxyAction = () => {
 
     // 分配 sourceChain 的餘額，來完成預期交易
     const result: prepareProxyActionResult["result"] = [];
-    let accumulatedAmount = 0;
+    let accumulatedAmount = ethers.parseUnits("0", 6); // BigInt 累計金額
+
     for (const chain of sourceChain) {
+      // 獲取該鏈上的餘額
       const balance = balances[chain.network];
-      const balanceNumber = parseFloat(balance.formatted);
-      const amountToUse = totalAmountNumber - accumulatedAmount;
-      const expectedAmount = Math.min(amountToUse, balanceNumber);
+      // 轉換為BigInt以便計算
+      const balanceBigInt = ethers.parseUnits(balance.formatted, 6);
+
+      // 計算還需要的金額 (總金額 - 已累計金額)
+      const remainingAmount = totalAmountBigInt - accumulatedAmount;
+
+      // 計算在當前鏈上可以使用的金額 (取餘額和剩餘所需金額的較小值)
+      const amountToUse =
+        remainingAmount > balanceBigInt ? balanceBigInt : remainingAmount;
+
+      console.log("balance:", balance);
+      console.log("balanceBigInt:", balanceBigInt);
+      console.log("remainingAmount:", remainingAmount);
+      console.log("amountToUse:", amountToUse);
+
+      // 添加結果
       result.push({
-        amount: expectedAmount.toString(),
+        amount: amountToUse, // 直接使用BigInt
         sourceChain: chain,
       });
-      accumulatedAmount += expectedAmount;
-      if (accumulatedAmount >= totalAmountNumber) {
+
+      // 更新累計金額
+      accumulatedAmount = accumulatedAmount + amountToUse;
+
+      // 如果已經滿足總金額，退出循環
+      if (accumulatedAmount >= totalAmountBigInt) {
         break;
       }
     }

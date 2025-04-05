@@ -64,6 +64,7 @@ export function TokenBalances() {
         ) : (
           <h1 className="text-6xl font-thin py-4 ">USDC ${totalBalance}</h1>
         )}
+        <AddNetworkDialogWidget />
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -101,7 +102,6 @@ export function TokenBalances() {
             ) : null;
           })
         )}
-        <AddNetworkDialogWidget />
       </div>
     </div>
   );

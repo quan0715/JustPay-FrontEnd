@@ -29,7 +29,6 @@ const handler = NextAuth({
             process.env.NEXTAUTH_URL ?? "http://localhost:3000"
           );
           const siweMessage = new SiweMessage(credentials.message);
-          // console.log(siweMessage);
           const result = await siweMessage.verify({
             signature: credentials.signature,
             domain: nextAuthUrl.host,

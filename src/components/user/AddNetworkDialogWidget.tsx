@@ -16,17 +16,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Check, Loader2 } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
 import { useApproveERC20 } from "@/hooks/useApproveERC20";
 import { ChainToken, ChainTokenList } from "@/models/token";
+import { ethers } from "ethers";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import useUpdatingUserData from "@/hooks/useUpdatingUserData";
-const SPENDER_ADDRESS = process.env.NEXT_PUBLIC_JUSTPAY_SPENDER_ADDRESS;
+import { useFactoryContract } from "@/hooks/useFactory";
+import { deployCreate2 } from "@/app/_actions/deployCreate2";
+// const SPENDER_ADDRESS = process.env.NEXT_PUBLIC_JUSTPAY_SPENDER_ADDRESS;
 
 export default function AddNetworkDialogWidget() {
   const {
@@ -48,7 +50,8 @@ export default function AddNetworkDialogWidget() {
   const [selectedNetwork, setSelectedNetwork] = useState<ChainToken | null>(
     null
   );
-  const [approveAmount, setApproveAmount] = useState("1000");
+  const { getSpenderAddress } = useFactoryContract();
+  const [spenderAddress, setSpenderAddress] = useState<string>("");
   const { isUpdating, updateUser } = useUpdatingUserData();
 
   const handleApproveSign = async () => {
@@ -57,12 +60,15 @@ export default function AddNetworkDialogWidget() {
       return;
     }
     try {
+      const spenderAddress = await getSpenderAddress();
+      console.log("spenderAddress", spenderAddress);
       await approve({
-        spender: SPENDER_ADDRESS as string,
-        amount: approveAmount,
+        spender: spenderAddress as string,
         chainId: selectedNetwork.chainId,
         tokenAddress: selectedNetwork.contractAddress,
+        useMax: true,
       });
+      setSpenderAddress(spenderAddress as string);
     } catch (error) {
       console.error("簽署時發生錯誤:", error);
       toast.error("簽署時發生錯誤");
@@ -81,16 +87,19 @@ export default function AddNetworkDialogWidget() {
     }
     toast.success(`已成功簽署 ${selectedNetwork.network} 上的 USDC 授權`);
     try {
+      await deployCreate2(address as `0x${string}`, selectedNetwork.chainId);
       // 這裡應該使用 API 路由來保存簽名數據
       await updateUser({
         address: address as `0x${string}`,
+        spenderAddress: spenderAddress as string,
         allowances: [
           ...(userData?.allowances || []),
           {
             chainName: selectedNetwork.network,
             txHash: txHash as string,
             tokenAddress: selectedNetwork.contractAddress,
-            amount: approveAmount,
+            amount: ethers.MaxUint256.toString(),
+            spenderAddress: spenderAddress,
           },
         ],
       });
@@ -113,18 +122,18 @@ export default function AddNetworkDialogWidget() {
   }, [isDialogOpen]);
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && spenderAddress) {
       handleSaveApproval();
     }
     if (approveError) {
       toast.error(`簽署失敗: ${approveError}`);
     }
-  }, [isSuccess, approveError]);
+  }, [isSuccess, approveError, spenderAddress]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full h-full ">
+        <Button variant="outline" className="">
           <Plus className="h-4 w-4 mr-2" />
           新增網絡
         </Button>
@@ -189,7 +198,7 @@ export default function AddNetworkDialogWidget() {
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <label htmlFor="amount" className="text-sm font-medium">
               授權數量 (USDC)
             </label>
@@ -200,8 +209,8 @@ export default function AddNetworkDialogWidget() {
               onChange={(e) => setApproveAmount(e.target.value)}
               placeholder="授權數量"
               disabled={isApproving || isUpdating}
-            />
-          </div>
+            /> */}
+          {/* </div> */}
 
           {isSuccess && (
             <div className="mt-4 p-3 bg-gray-100 rounded-md dark:bg-gray-800">

@@ -28,15 +28,6 @@ export function useApproveERC20() {
     useMax?: boolean;
   }) => {
     try {
-      console.log(
-        "approve",
-        tokenAddress,
-        spender,
-        amount,
-        chainId,
-        decimals,
-        useMax
-      );
       setError(null);
       setIsApproving(true);
       setTxHash(null);
@@ -60,6 +51,8 @@ export function useApproveERC20() {
 
       // 4. 發送交易
       const tx = await contract.approve(spender, amountParsed);
+      await tx.wait();
+      console.log("tx", tx);
       setTxHash(tx.hash);
       setIsSuccess(true);
       // 5. 等待交易上鏈

@@ -21,23 +21,23 @@ import { useUserData } from "@/hooks/useUserData";
 import { ConfirmTransactionDialog } from "./ConfirmTransactionDialog";
 import { SignResult } from "@/hooks/useJustPaySign";
 import { ChainChip } from "../dappComponent/ChainChip";
+import { ChainTokenList } from "@/models/token";
+import { SignProxyOffChainTransaction } from "@/models/transaction";
+
 export function TransferWidget() {
   const [recipientAddress, setRecipientAddress] = useState<string>("");
-  const [amount, setAmount] = useState<string>("1");
-  const [recipientTargetChain, setRecipientTargetChain] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [recipientTargetChain, setRecipientTargetChain] = useState<string>(
+    ChainTokenList[0].network
+  );
   const { data: walletClient } = useWalletClient();
   const { data: userData, isLoading: isLoadingUserData } = useUserData();
   const { totalBalance } = useUserTokenBalance();
 
   // 確認對話框狀態
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [transactionData, setTransactionData] = useState<{
-    senderAddress: string;
-    recipientAddress: string;
-    amount: string;
-    sourceChain: ChainToken[];
-    destinationChain: ChainToken;
-  } | null>(null);
+  const [transactionSignData, setTransactionSignData] =
+    useState<SignProxyOffChainTransaction | null>(null);
 
   // 驗證輸入金額
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +78,7 @@ export function TransferWidget() {
       .map((allowance) => getChainTokenDataByName(allowance.chainName));
 
     // 設置交易數據
-    setTransactionData({
+    setTransactionSignData({
       senderAddress: walletClient?.account.address || "",
       recipientAddress,
       amount,
@@ -103,7 +103,7 @@ export function TransferWidget() {
     // 延遲關閉對話框
     setTimeout(() => {
       setDialogOpen(false);
-      setTransactionData(null);
+      setTransactionSignData(null);
     }, 1000);
   };
 
@@ -231,23 +231,20 @@ export function TransferWidget() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {userData?.allowances.map((allowance) => (
+                  {ChainTokenList.map((chainToken) => (
                     <SelectItem
-                      key={allowance.chainName}
-                      value={allowance.chainName}
+                      key={chainToken.network}
+                      value={chainToken.network}
                     >
                       <div className="flex items-center gap-2">
                         <Image
-                          src={
-                            getChainTokenDataByName(allowance.chainName)
-                              ?.image || ""
-                          }
-                          alt={allowance.chainName}
+                          src={chainToken.image || ""}
+                          alt={chainToken.network}
                           width={20}
                           height={20}
                           className="rounded-full"
                         />
-                        {allowance.chainName}
+                        {chainToken.network}
                       </div>
                     </SelectItem>
                   ))}
@@ -262,10 +259,9 @@ export function TransferWidget() {
         className="w-full py-6 text-lg rounded-xl duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
         disabled={
           !amount ||
-          parseFloat(amount) <= 0 ||
-          // parseFloat(amount) > parseFloat(balance?.formatted || "0") ||
           !recipientAddress ||
-          !recipientTargetChain
+          !recipientTargetChain ||
+          !isAmountValid()
         }
         onClick={handleOpenConfirmDialog}
       >
@@ -284,7 +280,7 @@ export function TransferWidget() {
       <ConfirmTransactionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        transactionData={transactionData}
+        transactionData={transactionSignData}
         onCompleted={handleTransactionCompleted}
       />
     </div>
@@ -302,7 +298,7 @@ function TransferWidgetSectionHeader({ title }: { title: string }) {
 function TransferWidgetIcon() {
   return (
     <div className="w-12 h-12 flex items-center justify-center rounded-md p-1">
-      <ArrowDown className="w-full h-full text-blue-500 animate-bounce" />
+      <ArrowDown className="w-full h-full text-blue-500" />
     </div>
   );
 }

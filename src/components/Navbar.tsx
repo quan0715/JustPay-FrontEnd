@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <header className="w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex">
+        <div className="mr-4 flex ">
           <Link href="/" className="mr-6 flex items-center space-x-2 p-2">
             <Image
               src="/logo.png"
@@ -31,7 +31,7 @@ export default function Navbar() {
             <span className="font-bold">JustPay</span>
           </Link>
 
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link
               href="/"
               className="transition-colors hover:text-foreground/80"
@@ -39,10 +39,16 @@ export default function Navbar() {
               首頁
             </Link>
             <Link
+              href="/transfer"
+              className="transition-colors hover:text-foreground/80"
+            >
+              跨鏈轉賬
+            </Link>
+            <Link
               href="/transactions"
               className="transition-colors hover:text-foreground/80"
             >
-              交易紀錄
+              交易記錄
             </Link>
             <Link
               href="/settings"
