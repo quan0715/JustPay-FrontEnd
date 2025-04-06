@@ -36,25 +36,19 @@ export default function Navbar() {
               href="/"
               className="transition-colors hover:text-foreground/80"
             >
-              首頁
+              Home
             </Link>
             <Link
               href="/transfer"
               className="transition-colors hover:text-foreground/80"
             >
-              跨鏈轉賬
+              Cross-Chain Transfer
             </Link>
             <Link
               href="/transactions"
               className="transition-colors hover:text-foreground/80"
             >
-              交易記錄
-            </Link>
-            <Link
-              href="/settings"
-              className="transition-colors hover:text-foreground/80"
-            >
-              設定
+              Transaction Records
             </Link>
           </nav>
         </div>

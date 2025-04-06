@@ -56,7 +56,7 @@ export default function AddNetworkDialogWidget() {
 
   const handleApproveSign = async () => {
     if (!selectedNetwork) {
-      toast.error("請選擇網絡");
+      toast.error("Please select the network");
       return;
     }
     try {
@@ -70,8 +70,8 @@ export default function AddNetworkDialogWidget() {
       });
       setSpenderAddress(spenderAddress as string);
     } catch (error) {
-      console.error("簽署時發生錯誤:", error);
-      toast.error("簽署時發生錯誤");
+      console.error("Signing error:", error);
+      toast.error("Signing error");
     }
   };
 
@@ -82,10 +82,12 @@ export default function AddNetworkDialogWidget() {
   };
   const handleSaveApproval = async () => {
     if (!selectedNetwork) {
-      toast.error("請選擇網絡");
+      toast.error("Please select the network");
       return;
     }
-    toast.success(`已成功簽署 ${selectedNetwork.network} 上的 USDC 授權`);
+    toast.success(
+      `Successfully signed the USDC authorization on ${selectedNetwork.network}`
+    );
     try {
       await deployCreate2(address as `0x${string}`, selectedNetwork.chainId);
       // 這裡應該使用 API 路由來保存簽名數據
@@ -103,14 +105,14 @@ export default function AddNetworkDialogWidget() {
           },
         ],
       });
-      toast.success("授權已保存到您的帳戶");
+      toast.success("Authorization saved to your account");
       // 關閉對話框並刷新用戶數據
       setTimeout(() => {
         setIsDialogOpen(false);
       }, 1500);
     } catch (error) {
-      console.error("保存授權時發生錯誤:", error);
-      toast.error("保存授權時發生錯誤");
+      console.error("Saving authorization error:", error);
+      toast.error("Saving authorization error");
     }
   };
 
@@ -135,18 +137,18 @@ export default function AddNetworkDialogWidget() {
       <DialogTrigger asChild>
         <Button variant="outline" className="">
           <Plus className="h-4 w-4 mr-2" />
-          新增網絡
+          Add Network
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>添加網絡授權</DialogTitle>
+          <DialogTitle>Add Network Authorization</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4 w-full">
           <div className="space-y-2 w-full">
             <label htmlFor="network" className="text-sm font-medium">
-              選擇網絡
+              Select Network
             </label>
             {isUserLoading ? (
               <Skeleton className="w-full h-10" />
@@ -163,7 +165,7 @@ export default function AddNetworkDialogWidget() {
                 disabled={isApproving || isUpdating || isUserLoading}
               >
                 <SelectTrigger id="network" className="w-full">
-                  <SelectValue placeholder="選擇網絡" />
+                  <SelectValue placeholder="Select Network" />
                 </SelectTrigger>
                 <SelectContent className="w-full">
                   {ChainTokenList.map((network) => (
@@ -187,7 +189,7 @@ export default function AddNetworkDialogWidget() {
                         {isNetworkAlreadyAdded(network) && (
                           <>
                             <Check className="w-4 h-4 text-green-500" />
-                            <span>已授權</span>
+                            <span>Authorized</span>
                           </>
                         )}
                       </div>
@@ -198,39 +200,27 @@ export default function AddNetworkDialogWidget() {
             )}
           </div>
 
-          {/* <div className="space-y-2">
-            <label htmlFor="amount" className="text-sm font-medium">
-              授權數量 (USDC)
-            </label>
-            <Input
-              id="amount"
-              type="number"
-              value={approveAmount}
-              onChange={(e) => setApproveAmount(e.target.value)}
-              placeholder="授權數量"
-              disabled={isApproving || isUpdating}
-            /> */}
-          {/* </div> */}
-
           {isSuccess && (
             <div className="mt-4 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
               <div className="flex items-center">
                 <Check className="h-5 w-5 text-green-500 mr-2" />
-                <p className="text-sm font-medium">授權簽名已創建</p>
+                <p className="text-sm font-medium">
+                  Authorization signature created
+                </p>
               </div>
               <p className="text-xs text-gray-500 truncate mt-1">
-                簽名: {txHash?.substring(0, 20)}...
+                Signature: {txHash?.substring(0, 20)}...
               </p>
               {isUpdating && (
                 <div className="flex items-center mt-2 text-sm text-blue-500">
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  正在保存授權數據...
+                  Saving authorization data...
                 </div>
               )}
               {isSuccess && !isUpdating && (
                 <div className="flex items-center mt-2 text-sm text-green-500">
                   <Check className="h-4 w-4 mr-2" />
-                  授權已保存，將自動關閉
+                  Authorization saved, will close automatically
                 </div>
               )}
             </div>
@@ -240,7 +230,7 @@ export default function AddNetworkDialogWidget() {
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" disabled={isApproving || isUpdating}>
-              取消
+              Cancel
             </Button>
           </DialogClose>
           <Button
@@ -250,10 +240,10 @@ export default function AddNetworkDialogWidget() {
             {isApproving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                簽署中...
+                Signing...
               </>
             ) : (
-              "簽署授權"
+              "Sign authorization"
             )}
           </Button>
         </DialogFooter>

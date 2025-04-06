@@ -266,14 +266,14 @@ export function TransferWidget() {
         onClick={handleOpenConfirmDialog}
       >
         {!recipientAddress
-          ? "請輸入收款地址"
+          ? "Please enter the recipient address"
           : !recipientTargetChain
-          ? "請選擇目標鏈"
+          ? "Please select the target chain"
           : !amount || parseFloat(amount) <= 0
-          ? "請輸入金額"
+          ? "Please enter the amount"
           : !isAmountValid()
-          ? "餘額不足"
-          : "確認並簽名"}
+          ? "Insufficient balance"
+          : "Confirm and sign"}
       </Button>
 
       {/* 確認交易對話框 */}

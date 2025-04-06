@@ -232,11 +232,11 @@ export default function TransactionsPage() {
     <div className="min-h-screen p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">交易記錄</h1>
+          <h1 className="text-2xl font-bold">Transaction Records</h1>
           <div className="flex flex-row gap-2">
             <Button onClick={handleRefresh}>
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              刷新
+              Refresh
             </Button>
           </div>
         </div>
@@ -252,49 +252,59 @@ export default function TransactionsPage() {
         ) : (
           <Tabs defaultValue="transactions" className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="transactions">鏈上交易</TabsTrigger>
-              <TabsTrigger value="signatures">簽名記錄</TabsTrigger>
+              <TabsTrigger value="transactions">
+                On-Chain Transactions
+              </TabsTrigger>
+              <TabsTrigger value="signatures">Signature Records</TabsTrigger>
             </TabsList>
 
             {/* 添加說明面板 */}
             <div className="mb-4 p-3 bg-slate-50 rounded-md text-sm">
-              <h3 className="font-medium mb-2">狀態說明：</h3>
+              <h3 className="font-medium mb-2">Status Description:</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="font-medium mb-1">簽名狀態：</p>
+                  <p className="font-medium mb-1">Signature Status:</p>
                   <ul className="space-y-1">
                     <li className="flex items-center">
                       <StatusBadge status="ready" type="signature" />
-                      <span className="ml-2">簽名已完成，準備轉賬</span>
+                      <span className="ml-2">
+                        Signature completed, ready to transfer
+                      </span>
                     </li>
                     <li className="flex items-center">
                       <StatusBadge status="completed" type="signature" />
-                      <span className="ml-2">已完成轉賬流程</span>
+                      <span className="ml-2">
+                        Signature completed, ready to transfer
+                      </span>
                     </li>
                     <li className="flex items-center">
                       <StatusBadge status="failed" type="signature" />
-                      <span className="ml-2">簽名或燃燒操作失敗</span>
+                      <span className="ml-2">
+                        Signature or burn operation failed
+                      </span>
                     </li>
                   </ul>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">交易狀態：</p>
+                  <p className="font-medium mb-1">Transaction Status:</p>
                   <ul className="space-y-1">
                     <li className="flex items-center">
                       <StatusBadge status="ready" type="transaction" />
-                      <span className="ml-2">交易已確認，等待接收</span>
+                      <span className="ml-2">
+                        Transaction confirmed, waiting to receive
+                      </span>
                     </li>
                     <li className="flex items-center">
                       <StatusBadge status="pending" type="transaction" />
-                      <span className="ml-2">交易處理中</span>
+                      <span className="ml-2">Transaction processing</span>
                     </li>
                     <li className="flex items-center">
                       <StatusBadge status="completed" type="transaction" />
-                      <span className="ml-2">交易已完成</span>
+                      <span className="ml-2">Transaction completed</span>
                     </li>
                     <li className="flex items-center">
                       <StatusBadge status="failed" type="transaction" />
-                      <span className="ml-2">交易失敗</span>
+                      <span className="ml-2">Transaction failed</span>
                     </li>
                   </ul>
                 </div>
@@ -305,9 +315,10 @@ export default function TransactionsPage() {
               {transactions.length === 0 ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>暫無鏈上交易記錄</CardTitle>
+                    <CardTitle>No transaction records</CardTitle>
                     <CardDescription>
-                      完成一筆交易後，記錄將顯示在此處
+                      After completing a transaction, the record will be
+                      displayed here
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -316,13 +327,13 @@ export default function TransactionsPage() {
                   <table className="w-full bg-card rounded-md shadow">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="p-4 text-left">來源鏈</th>
-                        <th className="p-4 text-left">目標鏈</th>
-                        <th className="p-4 text-left">金額</th>
-                        <th className="p-4 text-left">交易哈希</th>
-                        <th className="p-4 text-left">狀態</th>
-                        <th className="p-4 text-left">建立時間</th>
-                        <th className="p-4 text-left">更新時間</th>
+                        <th className="p-4 text-left">Source Chain</th>
+                        <th className="p-4 text-left">Target Chain</th>
+                        <th className="p-4 text-left">Amount</th>
+                        <th className="p-4 text-left">Transaction Hash</th>
+                        <th className="p-4 text-left">Status</th>
+                        <th className="p-4 text-left">Created Time</th>
+                        <th className="p-4 text-left">Updated Time</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-muted">
@@ -363,9 +374,10 @@ export default function TransactionsPage() {
               {signatureTransactions.length === 0 ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>暫無簽名記錄</CardTitle>
+                    <CardTitle>No signature records</CardTitle>
                     <CardDescription>
-                      完成一筆簽名後，記錄將顯示在此處
+                      After completing a signature, the record will be displayed
+                      here
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -374,14 +386,14 @@ export default function TransactionsPage() {
                   <table className="w-full bg-card rounded-md shadow">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="p-4 text-left">簽名ID</th>
-                        <th className="p-4 text-left">目標鏈</th>
-                        <th className="p-4 text-left">總金額</th>
-                        <th className="p-4 text-left">簽名狀態</th>
-                        <th className="p-4 text-left">交易狀態</th>
-                        <th className="p-4 text-left">交易哈希</th>
-                        <th className="p-4 text-left">建立時間</th>
-                        <th className="p-4 text-left">操作</th>
+                        <th className="p-4 text-left">Signature ID</th>
+                        <th className="p-4 text-left">Target Chain</th>
+                        <th className="p-4 text-left">Total Amount</th>
+                        <th className="p-4 text-left">Signature Status</th>
+                        <th className="p-4 text-left">Transaction Status</th>
+                        <th className="p-4 text-left">Transaction Hash</th>
+                        <th className="p-4 text-left">Created Time</th>
+                        <th className="p-4 text-left">Operation</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-muted">
@@ -434,7 +446,7 @@ export default function TransactionsPage() {
                               } else {
                                 return (
                                   <span className="text-xs text-gray-500">
-                                    無關聯交易
+                                    No related transaction
                                   </span>
                                 );
                               }
@@ -455,7 +467,7 @@ export default function TransactionsPage() {
                                 ))}
                               </div>
                             ) : (
-                              "無"
+                              "No"
                             )}
                           </td>
                           <td className="p-4">{formatDate(tx.createdAt)}</td>
@@ -482,7 +494,7 @@ export default function TransactionsPage() {
                                       {processingSignatures.includes(tx.id) ? (
                                         <>
                                           <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                                          處理中...
+                                          Processing...
                                         </>
                                       ) : (
                                         "Transfer Token"
@@ -523,7 +535,7 @@ export default function TransactionsPage() {
                                           }, 100);
                                         }}
                                       >
-                                        查看詳情
+                                        View details
                                       </Button>
                                     )}
                                   </div>
@@ -532,7 +544,7 @@ export default function TransactionsPage() {
                                 return (
                                   <div className="space-y-2">
                                     <span className="text-green-600 text-sm block">
-                                      已完成
+                                      Completed
                                     </span>
                                     {related && (
                                       <Button
@@ -569,7 +581,7 @@ export default function TransactionsPage() {
                                           }, 100);
                                         }}
                                       >
-                                        查看詳情
+                                        View details
                                       </Button>
                                     )}
                                   </div>
@@ -579,8 +591,8 @@ export default function TransactionsPage() {
                                   <div className="space-y-2">
                                     <span className="text-gray-500 text-sm block">
                                       {tx.status === "failed"
-                                        ? "失敗"
-                                        : "處理中"}
+                                        ? "Failed"
+                                        : "Processing"}
                                     </span>
                                     {related && (
                                       <Button
@@ -617,7 +629,7 @@ export default function TransactionsPage() {
                                           }, 100);
                                         }}
                                       >
-                                        查看詳情
+                                        View details
                                       </Button>
                                     )}
                                   </div>

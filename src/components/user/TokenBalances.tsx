@@ -30,7 +30,7 @@ function formatAmount(amount: string): string {
     const formattedAmount = (numericAmount / 1_000_000).toFixed(2);
     return formattedAmount;
   } catch (error) {
-    console.error("格式化金額時發生錯誤:", error);
+    console.error("Formatting amount error:", error);
     return "0.00";
   }
 }
@@ -49,7 +49,9 @@ export function TokenBalances() {
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Total USDC Balance</CardTitle>
-          <CardDescription>請連接您的錢包並完成驗證</CardDescription>
+          <CardDescription>
+            Please connect your wallet and complete verification
+          </CardDescription>
         </CardHeader>
       </Card>
     );
