@@ -4,14 +4,13 @@ import {
   updateTransactionStatus,
 } from "./transactionLogAction";
 import { ethers } from "ethers";
-import { getChainTokenDataByChainId } from "@/models/token";
+import {
+  getChainTokenDataByChainId,
+  getChainTokenDataByName,
+} from "@/models/token";
 import { Network } from "alchemy-sdk";
-import { TransactionLog } from "@/models/transactionLog";
 
 // 擴展 TransactionLog 介面以包含 signatureId
-interface EnhancedTransactionLog extends TransactionLog {
-  signatureId?: string;
-}
 
 function getNetworkRpcUrl(network: Network): string {
   const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "demo";
@@ -86,8 +85,7 @@ export async function transferForSignature(
   nonces: number[],
   expirationTime: number,
   destinationChainId: number,
-  targetAddress: string,
-  userAddress: string
+  targetAddress: string
 ) {
   // 檢查操作員私鑰
   const operatorPrivateKey = process.env.PROXY_OPERATOR_PRIVATE_KEY;
@@ -109,11 +107,17 @@ export async function transferForSignature(
 
     // 設置 RPC 提供者
     const rpcUrl = getNetworkRpcUrl(destinationNetwork.network);
+    const networkToken = getChainTokenDataByName(
+      destinationNetwork.chainId.toString()
+    );
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const operator = new ethers.Wallet(operatorPrivateKey, provider);
 
     // 合約 ABI - 使用 receiveMessage 功能
-    const ABI = ["function receiveMessage(bytes message, bytes attestation)"];
+    // 合約 ABI - 使用 proxyTransfer 功能
+    const ABI = [
+      "function proxyTransfer(address token, uint256[] memory sourceChainIds, uint256[] memory amountEach, uint256[] memory nonces, uint256 expirey, uint256 destinationChainId, address targetAddress, bytes memory signature)",
+    ];
 
     // 連接合約
     const contract = new ethers.Contract(
@@ -122,45 +126,21 @@ export async function transferForSignature(
       operator
     );
 
-    // 查找相關交易記錄以獲取 message 和 attestation
-    const transactionLogs = (await getUserTransactionLogs(
-      userAddress
-    )) as EnhancedTransactionLog[];
-    const relevantTx = transactionLogs.find(
-      (log) => log.status === "ready" && log.signatureId === signatureId
-    );
-
-    if (!relevantTx || !relevantTx.message || !relevantTx.attestation) {
-      throw new Error("找不到相關的交易記錄或缺少必要參數");
-    }
-
-    console.log("執行 receiveMessage 交易...");
-    console.log("目標合約:", destinationNetwork.TransmitterContractAddress);
-    console.log("Message:", relevantTx.message.slice(0, 50) + "...");
-    console.log("Attestation:", relevantTx.attestation.slice(0, 50) + "...");
-
-    // 執行 receiveMessage 交易
-    const tx = await contract.receiveMessage(
-      relevantTx.message,
-      relevantTx.attestation
+    // 執行 proxyTransfer 交易
+    const tx = await contract.proxyTransfer(
+      networkToken?.contractAddress,
+      sourceChainIds,
+      amountsEach,
+      nonces,
+      expirationTime,
+      destinationChainId,
+      targetAddress,
+      signature
     );
 
     // 等待交易確認
     const receipt = await tx.wait();
     console.log("交易已確認:", receipt);
-
-    // 更新簽名交易狀態
-    const { updateSignatureTransaction } = await import(
-      "./signatureTransactionAction"
-    );
-    await updateSignatureTransaction(signatureId, {
-      status: "completed",
-    });
-
-    // 更新交易記錄狀態
-    await updateTransactionStatus(relevantTx.id, {
-      status: "completed",
-    });
 
     return {
       success: true,

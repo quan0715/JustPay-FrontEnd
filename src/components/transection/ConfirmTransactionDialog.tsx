@@ -18,6 +18,7 @@ import React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserData } from "@/hooks/useUserData";
 import { useRouter } from "next/navigation";
+import { ethers } from "ethers";
 // 交易階段定義
 export type TransactionStage =
   | "confirm"
@@ -254,9 +255,10 @@ function TransactionDetails({
     return null;
   }
 
-  const total = proxyResult.result
-    .reduce((sum, item) => sum + Number(item.amount), 0)
-    .toFixed(2);
+  const total = proxyResult.result.reduce(
+    (sum, item) => sum + parseFloat(item.amount.toString()),
+    0
+  );
 
   return (
     <div className="mt-4">
@@ -276,7 +278,7 @@ function TransactionDetails({
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm font-medium">
-                {Number(item.amount).toFixed(2)}
+                {ethers.formatUnits(item.amount, 6)}
               </span>
               <span className="text-xs text-gray-500">USDC</span>
             </div>
@@ -284,7 +286,9 @@ function TransactionDetails({
         ))}
         <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between items-center">
           <span className="text-sm font-medium">總計:</span>
-          <span className="text-sm font-bold">{total} USDC</span>
+          <span className="text-sm font-bold">
+            {ethers.formatUnits(total, 6)} USDC
+          </span>
         </div>
       </div>
     </div>
@@ -449,6 +453,7 @@ export function ConfirmTransactionDialog({
 
     try {
       const result = await signMessage({
+        targetAddress: transactionData.recipientAddress,
         destinationChainId: transactionData.destinationChain.chainId,
         sourceChains:
           proxyResult.result?.map((item) => ({

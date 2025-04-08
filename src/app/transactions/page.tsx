@@ -47,7 +47,6 @@ export default function TransactionsPage() {
     null
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [autoExecute, setAutoExecute] = useState(true);
 
   // 獲取交易記錄
   const fetchTransactions = async () => {
@@ -205,8 +204,7 @@ export default function TransactionsPage() {
         signature.nonces,
         signature.expirationTime,
         signature.destinationChainId,
-        signature.targetAddress,
-        address
+        signature.targetAddress
       );
 
       if (result.success) {
@@ -240,18 +238,6 @@ export default function TransactionsPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Transaction Records</h1>
           <div className="flex items-center gap-4">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="auto-execute"
-                checked={autoExecute}
-                onChange={(e) => setAutoExecute(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="auto-execute" className="text-sm font-medium">
-                自動執行待處理簽名
-              </label>
-            </div>
             <Button onClick={handleRefresh}>
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Refresh
@@ -373,11 +359,6 @@ export default function TransactionsPage() {
                               status={tx.status}
                               type="transaction"
                             />
-                            {tx.errorMessage && (
-                              <div className="text-xs text-red-600 mt-1">
-                                {tx.errorMessage}
-                              </div>
-                            )}
                           </td>
                           <td className="p-4">
                             {tx.relatedSignature ? (
@@ -435,24 +416,28 @@ export default function TransactionsPage() {
                       <tr>
                         <th className="p-4 text-left">Signature ID</th>
                         <th className="p-4 text-left">Target Chain</th>
-                        <th className="p-4 text-left">Total Amount</th>
                         <th className="p-4 text-left">Signature Status</th>
-                        <th className="p-4 text-left">Related Transactions</th>
-                        <th className="p-4 text-left">Transaction Hashes</th>
-                        <th className="p-4 text-left">Created Time</th>
-                        <th className="p-4 text-left">Operation</th>
+                        <th className="p-4 text-left">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-muted">
                       {signatureTransactions.map((tx) => {
                         const summary = getSignatureSummary(tx.id);
+                        // 判斷是否可以執行轉賬 - 狀態為 ready 或 (completed 且相關交易數 > 1)
+                        const canTransfer =
+                          tx.status === "completed" && summary.total > 0;
+
                         return (
                           <tr
                             key={tx.id}
                             id={`signature-${tx.id}`}
                             className="hover:bg-muted/50 transition-colors duration-300"
                           >
-                            <td className="p-4">{tx.id.slice(0, 8)}...</td>
+                            <td className="p-4">
+                              <div className="flex flex-col">
+                                <span>{tx.id.slice(0, 8)}...</span>
+                              </div>
+                            </td>
                             <td className="p-4">
                               {(() => {
                                 switch (tx.destinationChainId) {
@@ -469,151 +454,45 @@ export default function TransactionsPage() {
                                 }
                               })()}
                             </td>
-                            <td className="p-4">{tx.totalAmount}</td>
                             <td className="p-4">
-                              <StatusBadge
-                                status={tx.status}
-                                type="signature"
-                              />
-                              {tx.errorMessage && (
-                                <div className="text-xs text-red-600 mt-1">
-                                  {tx.errorMessage}
-                                </div>
-                              )}
-                            </td>
-                            <td className="p-4">
-                              {summary.total > 0 ? (
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm">
-                                      總計: {summary.total}
-                                    </span>
-                                    {summary.total > 0 && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                          // 切換到交易標籤
-                                          const tabsTrigger =
-                                            document.querySelector(
-                                              'button[value="transactions"]'
-                                            ) as HTMLButtonElement;
-                                          if (tabsTrigger) tabsTrigger.click();
-                                        }}
-                                      >
-                                        View All
-                                      </Button>
-                                    )}
+                              <div className="flex flex-col gap-1">
+                                <StatusBadge
+                                  status={tx.status}
+                                  type="signature"
+                                />
+                                {summary.total > 0 && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    Related: {summary.total} tx(s)
                                   </div>
-                                  <div className="grid grid-cols-3 gap-1">
-                                    {summary.completed > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span className="text-xs text-green-700">
-                                          完成: {summary.completed}
-                                        </span>
-                                      </div>
-                                    )}
-                                    {summary.pending > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs text-blue-700">
-                                          處理中: {summary.pending}
-                                        </span>
-                                      </div>
-                                    )}
-                                    {summary.failed > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                        <span className="text-xs text-red-700">
-                                          失敗: {summary.failed}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-500">
-                                  No related transactions
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-4">
-                              {tx.transactionHashes &&
-                              tx.transactionHashes.length > 0 ? (
-                                <div className="space-y-1">
-                                  {tx.transactionHashes.map((hash, index) => (
-                                    <div key={index}>
-                                      {renderTxHashLink(
-                                        tx.sourceChainIds[index] ||
-                                          tx.destinationChainId,
-                                        hash
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                "No"
-                              )}
-                            </td>
-                            <td className="p-4">{formatDate(tx.createdAt)}</td>
-                            <td className="p-4">
-                              {/* 添加詳情按鈕 */}
-                              <div className="space-y-2">
-                                {/* 添加查看詳情按鈕 */}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleShowSignatureDetail(tx.id)
-                                  }
-                                  className="w-full"
-                                >
-                                  View Details
-                                </Button>
-
-                                {/* 使用函數處理邏輯避免類型錯誤 */}
-                                {(() => {
-                                  if (tx.status === "ready") {
-                                    return (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        disabled={processingSignatures.includes(
-                                          tx.id
-                                        )}
-                                        onClick={() => handleTransferToken(tx)}
-                                        className="w-full"
-                                      >
-                                        {processingSignatures.includes(
-                                          tx.id
-                                        ) ? (
-                                          <>
-                                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                                            Processing...
-                                          </>
-                                        ) : (
-                                          "Transfer Token"
-                                        )}
-                                      </Button>
-                                    );
-                                  } else if (tx.status === "completed") {
-                                    return (
-                                      <span className="text-green-600 text-sm block">
-                                        Completed
-                                      </span>
-                                    );
-                                  } else {
-                                    return (
-                                      <span className="text-gray-500 text-sm block">
-                                        {tx.status === "failed"
-                                          ? "Failed"
-                                          : "Processing"}
-                                      </span>
-                                    );
-                                  }
-                                })()}
+                                )}
                               </div>
+                            </td>
+                            <td className="p-4">
+                              <Button
+                                size="sm"
+                                variant={canTransfer ? "secondary" : "outline"}
+                                disabled={
+                                  true
+                                  // !canTransfer ||
+                                  // processingSignatures.includes(tx.id)
+                                }
+                                onClick={() => handleTransferToken(tx)}
+                                className="w-full"
+                              >
+                                {processingSignatures.includes(tx.id) ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : tx.status === "ready" ? (
+                                  "Transfer Token"
+                                ) : tx.status === "completed" &&
+                                  summary.total > 1 ? (
+                                  "Transfer Again"
+                                ) : (
+                                  "Transfer Token"
+                                )}
+                              </Button>
                             </td>
                           </tr>
                         );

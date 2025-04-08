@@ -196,7 +196,8 @@ export async function executeProxyDepositForBurn({
 
     // 更新簽名交易記錄狀態為已完成
     if (signatureTransaction) {
-      await updateSignatureTransaction(signatureTransaction.id, {
+      await (signatureTransaction.id,
+      {
         status: "completed",
       });
       console.log("已更新簽名交易記錄狀態為已完成");
