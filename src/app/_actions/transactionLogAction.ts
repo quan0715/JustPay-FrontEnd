@@ -63,6 +63,7 @@ export async function syncAllUnCompletedTransactionLogs(
   const transactionLogs = await getUserTransactionLogs(userAddress);
   for (const transactionLog of transactionLogs) {
     if (transactionLog.status !== "completed") {
+      console.log("syncTransactionLog:", transactionLog.id);
       await syncTransactionLog(transactionLog.id);
     }
   }

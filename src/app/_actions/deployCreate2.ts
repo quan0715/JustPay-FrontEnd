@@ -1,34 +1,18 @@
 "use server";
-import { Network } from "alchemy-sdk";
 import { ethers } from "ethers";
-import { getChainTokenDataByChainId } from "@/models/token";
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "demo";
-function getNetworkRpcUrl(network: Network): string {
-  switch (network) {
-    case Network.ETH_SEPOLIA:
-      return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-    case Network.BASE_SEPOLIA:
-      return `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-    case Network.LINEA_SEPOLIA:
-      return `https://linea-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-    case Network.AVAX_FUJI:
-      return `https://avax-fuji.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-    default:
-      return `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-  }
-}
+import { getUSDCMetadata } from "@/models/token";
+import { getNetworkRpcUrl } from "@/lib/alchemy";
+
 export async function deployCreate2(signerAddress: string, chainId: number) {
   const operatorPrivateKey = process.env.PROXY_OPERATOR_PRIVATE_KEY;
   if (!operatorPrivateKey) {
     throw new Error("Operator private key not found");
   }
-  const tokenChain = getChainTokenDataByChainId(chainId);
-  if (!tokenChain) {
-    throw new Error("Token chain not found");
+  const tokenMetadata = getUSDCMetadata(chainId);
+  if (!tokenMetadata) {
+    throw new Error("Token metadata not found");
   }
-  const provider = new ethers.JsonRpcProvider(
-    getNetworkRpcUrl(tokenChain.network)
-  );
+  const provider = new ethers.JsonRpcProvider(getNetworkRpcUrl(chainId));
   const signer = new ethers.Wallet(operatorPrivateKey, provider);
   const WritABI = [
     "function deploy(uint256 _salt_int, address signer, address operator) returns (address)",

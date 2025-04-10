@@ -93,6 +93,9 @@ export async function getTransactionStatus(
 ): Promise<CircleTransactionDetails | null> {
   try {
     console.log("getTransactionStatus", domain, transactionId);
+    console.log(
+      `${CIRCLE_API_BASE_URL}/${domain}?transactionHash=${transactionId}`
+    );
     const response = await makeRateLimitedRequest(
       `${CIRCLE_API_BASE_URL}/${domain}?transactionHash=${transactionId}`,
       {

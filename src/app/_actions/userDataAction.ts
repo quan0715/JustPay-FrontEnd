@@ -14,6 +14,7 @@ export async function getUserData(address: string) {
   }
   return {
     address: user.address ?? "",
+    salt: user.salt ?? 0,
     spenderAddress: user.spenderAddress ?? "",
     allowances: user.allowances ?? [],
   } as User;
@@ -22,9 +23,12 @@ export async function getUserData(address: string) {
 export async function createUserData(address: string) {
   const client = await clientPromise;
   const db = client.db("user");
+  // get random salt value (Integer 0 - 10000)
+  const randomSaltValue = Math.floor(Math.random() * 10000);
   const user = await db.collection("user").insertOne({
     address: address,
     spenderAddress: "",
+    salt: randomSaltValue,
     allowances: [],
   });
   return user;
@@ -41,8 +45,7 @@ export async function updateUserData(user: User) {
       },
       {
         $set: {
-          spenderAddress: user.spenderAddress,
-          allowances: user.allowances,
+          ...user,
         },
       }
     );

@@ -6,6 +6,12 @@ export type SignatureTransactionStatus =
   | "ready" // 所有相關交易都準備好了，可以開始轉帳
   | "completed"; // 交易已完成，之後不會再用到
 
+export type TransactionStatus =
+  | "failed" // Transaction is failed with burn Proxy Deposit
+  | "pending" // Transaction is pending
+  | "ready" // Transaction is ready to be sent (pass CCTPV2 API Check)
+  | "success"; // Transaction is successful
+
 // 簽名交易記錄模型
 export interface SignatureTransaction {
   id: string; // 唯一ID
@@ -14,7 +20,6 @@ export interface SignatureTransaction {
   status: SignatureTransactionStatus; // 交易狀態
   createdAt: Date; // 創建時間
   updatedAt: Date; // 更新時間
-
   // 簽名相關參數
   sourceChainIds: number[]; // 來源鏈ID陣列
   amountsEach: string[]; // 每個鏈的金額陣列
@@ -51,4 +56,32 @@ export interface UpdateSignatureTransactionParams {
   status?: SignatureTransactionStatus; // 交易狀態
   transactionHash?: string; // 新增交易哈希
   errorMessage?: string; // 錯誤信息
+}
+
+interface Transaction {
+  chainId: number;
+  amount: string;
+  nonce: number;
+  result?: TransactionResult;
+}
+
+interface TransactionResult {
+  transactionHash: string;
+  errorMessage?: string;
+  status: TransactionStatus;
+}
+
+export interface SignatureTransactionModel {
+  id: string;
+  signature: string;
+  senderAddress: string;
+  receiverAddress: string;
+  totalAmount: string;
+  destinationChainId: number;
+  status: SignatureTransactionStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  transactionList: Transaction[];
+  expirationTime: number;
+  errorMessage?: string;
 }

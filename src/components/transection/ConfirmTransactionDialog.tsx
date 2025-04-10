@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChainToken } from "@/models/token";
 import { SignResult, useJustPaySign } from "@/hooks/useJustPaySign";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
@@ -16,9 +15,11 @@ import { usePrepareProxyAction } from "@/hooks/usePrepareProxyAction";
 import { SignProxyOffChainTransaction } from "@/models/transaction";
 import React from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserData } from "@/hooks/useUserData";
+import { useUser } from "@/hooks/useUserData";
+import { useUserTokenBalance } from "@/hooks/useUserTokenBalance";
 import { useRouter } from "next/navigation";
 import { ethers } from "ethers";
+import { getUSDCMetadata } from "@/models/token";
 // 交易階段定義
 export type TransactionStage =
   | "confirm"
@@ -92,7 +93,7 @@ interface ProxyActionResult {
   message: string;
   result?: {
     amount: bigint;
-    sourceChain: ChainToken;
+    sourceChainId: number;
   }[];
 }
 
@@ -259,7 +260,7 @@ function TransactionDetails({
     (sum, item) => sum + parseFloat(item.amount.toString()),
     0
   );
-
+  const chainMetadata = getUSDCMetadata(proxyResult.result[0].sourceChainId);
   return (
     <div className="mt-4">
       <h3 className="text-sm font-semibold mb-2">預期交易明細:</h3>
@@ -268,13 +269,13 @@ function TransactionDetails({
           <div key={index} className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Image
-                src={item.sourceChain.image || ""}
-                alt={item.sourceChain.network.toString()}
+                src={chainMetadata.tokenImage || ""}
+                alt={chainMetadata.chainName}
                 width={16}
                 height={16}
                 className="rounded-full"
               />
-              <span className="text-sm">{item.sourceChain.network}</span>
+              <span className="text-sm">{chainMetadata.chainName}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm font-medium">
@@ -393,7 +394,20 @@ export function ConfirmTransactionDialog({
   const { signMessage, executeBurnProxy } = useJustPaySign();
   const { prepareProxyAction } = usePrepareProxyAction();
   const { address } = useAuth();
-  const { data: userData } = useUserData();
+  const { userData } = useUser();
+  const {
+    balances,
+    totalBalance,
+    fetchAllTokenBalances,
+    isLoading: isBalancesLoading,
+  } = useUserTokenBalance();
+
+  useEffect(() => {
+    fetchAllTokenBalances(
+      userData?.address || "",
+      userData?.allowances.map((allowance) => allowance.chainId) || []
+    );
+  }, []);
 
   // PIPE 流程處理函數
 
@@ -405,9 +419,12 @@ export function ConfirmTransactionDialog({
     setStage("verifying");
 
     try {
+      console.log("transaction:", transaction);
       const proxyResult = await prepareProxyAction({
         totalAmount: transaction.amount,
-        sourceChain: transaction.sourceChain,
+        sourceChainIds: transaction.sourceChain.map((chain) => chain.chainId),
+        balances,
+        totalBalance,
       });
 
       console.log("prepareProxyAction result:", proxyResult);
@@ -458,7 +475,7 @@ export function ConfirmTransactionDialog({
         sourceChains:
           proxyResult.result?.map((item) => ({
             amount: item.amount,
-            sourceChain: item.sourceChain,
+            sourceChainId: item.sourceChainId,
           })) || [],
       });
 
@@ -507,20 +524,18 @@ export function ConfirmTransactionDialog({
       // 對每個來源鏈執行 burnProxy (重要：這是唯一執行 burnProxy 的地方)
       for (const [index, item] of proxyActionResult.result.entries()) {
         console.log(`執行第 ${index + 1} 個來源鏈的 burnProxy:`, item);
-        if (
-          item.sourceChain.chainId === transactionData.destinationChain.chainId
-        ) {
-          console.log(`跳過與目標鏈相同的來源鏈: ${item.sourceChain.chainId}`);
+        if (item.sourceChainId === transactionData.destinationChain.chainId) {
+          console.log(`跳過與目標鏈相同的來源鏈: ${item.sourceChainId}`);
           continue;
         }
         // amount 0 不執行
         if (item.amount === BigInt(0)) {
-          console.log(`跳過金額為 0 的來源鏈: ${item.sourceChain.chainId}`);
+          console.log(`跳過金額為 0 的來源鏈: ${item.sourceChainId}`);
           continue;
         }
 
         // 從 proxyResult 獲取來源鏈和金額
-        const sourceChainId = item.sourceChain.chainId;
+        const sourceChainId = item.sourceChainId;
         console.log(`處理來源鏈 ID: ${sourceChainId}, 金額: ${item.amount}`);
 
         // 從 transactionData 獲取目標鏈和地址
@@ -538,7 +553,9 @@ export function ConfirmTransactionDialog({
 
           // 執行 burnProxy 並獲取結果
           const burnResult = await executeBurnProxy(
-            userData?.spenderAddress as string,
+            userData?.allowances.find(
+              (allowance) => allowance.chainId === item.sourceChainId
+            )?.spenderAddress as string,
             item.amount,
             sourceChainId,
             destinationChainId,

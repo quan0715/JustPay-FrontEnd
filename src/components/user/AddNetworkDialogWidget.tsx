@@ -19,118 +19,150 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Check, Loader2 } from "lucide-react";
-import { useUserData } from "@/hooks/useUserData";
-import { useApproveERC20 } from "@/hooks/useApproveERC20";
+import { useEnableNetwork } from "@/hooks/useEnableNetwork";
 import { ChainToken, ChainTokenList } from "@/models/token";
 import { ethers } from "ethers";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import useUpdatingUserData from "@/hooks/useUpdatingUserData";
-import { useFactoryContract } from "@/hooks/useFactory";
-import { deployCreate2 } from "@/app/_actions/deployCreate2";
-// const SPENDER_ADDRESS = process.env.NEXT_PUBLIC_JUSTPAY_SPENDER_ADDRESS;
+import { InteractionStatusMessage } from "@/components/contract/InteractionStatusMessage";
+import { useUser } from "@/hooks/useUserData";
+import { useRouter } from "next/navigation";
 
 export default function AddNetworkDialogWidget() {
-  const {
-    address,
-    data: userData,
-    isLoading: isUserLoading,
-    refreshData: refreshUserData,
-  } = useUserData();
-
-  const {
-    approve,
-    isApproving,
-    txHash,
-    error: approveError,
-    isSuccess,
-  } = useApproveERC20();
-
+  const { userData, isLoadingUserData } = useUser();
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<ChainToken | null>(
     null
   );
-  const { getSpenderAddress } = useFactoryContract();
   const [spenderAddress, setSpenderAddress] = useState<string>("");
+  const [txHash, setTxHash] = useState<string>("");
   const { isUpdating, updateUser } = useUpdatingUserData();
 
-  const handleApproveSign = async () => {
-    if (!selectedNetwork) {
-      toast.error("Please select the network");
-      return;
-    }
-    try {
-      const spenderAddress = await getSpenderAddress();
-      console.log("spenderAddress", spenderAddress);
-      await approve({
-        spender: spenderAddress as string,
-        chainId: selectedNetwork.chainId,
-        tokenAddress: selectedNetwork.contractAddress,
-        useMax: true,
-      });
-      setSpenderAddress(spenderAddress as string);
-    } catch (error) {
-      console.error("Signing error:", error);
-      toast.error("Signing error");
-    }
-  };
+  const {
+    getSpenderAddress,
+    getSpenderAddressStatus,
+    approveERC20,
+    approveStatus,
+    deployCreate2,
+    deployCreate2Status,
+  } = useEnableNetwork();
+
+  const isApproving =
+    deployCreate2Status === "Pending" ||
+    approveStatus === "Pending" ||
+    getSpenderAddressStatus === "Pending";
 
   const isNetworkAlreadyAdded = (network: ChainToken) => {
     return userData?.allowances.some(
       (allowance) => allowance.chainName === network.network
     );
   };
-  const handleSaveApproval = async () => {
+
+  const onSubmit = async () => {
     if (!selectedNetwork) {
       toast.error("Please select the network");
       return;
     }
-    toast.success(
-      `Successfully signed the USDC authorization on ${selectedNetwork.network}`
-    );
-    try {
-      await deployCreate2(address as `0x${string}`, selectedNetwork.chainId);
-      // 這裡應該使用 API 路由來保存簽名數據
+    if (!userData) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    const spenderAddress = await getSpenderAddress({
+      chainId: selectedNetwork.chainId,
+      userAddress: userData.address,
+      salt: userData?.salt,
+    });
+    if (spenderAddress) {
+      setSpenderAddress(spenderAddress as string);
+    }
+  };
+
+  useEffect(() => {
+    const handleUpdateUserData = async () => {
+      if (!selectedNetwork) {
+        toast.error("Please select the network");
+        return;
+      }
+      if (!userData) {
+        toast.error("Please connect your wallet");
+        return;
+      }
       await updateUser({
-        address: address as `0x${string}`,
+        ...userData,
         spenderAddress: spenderAddress as string,
         allowances: [
-          ...(userData?.allowances || []),
+          ...userData.allowances,
           {
+            chainId: selectedNetwork.chainId,
             chainName: selectedNetwork.network,
-            txHash: txHash as string,
+            txHash: txHash,
             tokenAddress: selectedNetwork.contractAddress,
             amount: ethers.MaxUint256.toString(),
             spenderAddress: spenderAddress,
           },
         ],
       });
-      toast.success("Authorization saved to your account");
-      // 關閉對話框並刷新用戶數據
-      setTimeout(() => {
-        setIsDialogOpen(false);
-      }, 1500);
-    } catch (error) {
-      console.error("Saving authorization error:", error);
-      toast.error("Saving authorization error");
+      toast.success("Updated user data");
+      setIsDialogOpen(false);
+      router.refresh();
+    };
+    if (deployCreate2Status === "Success" && txHash) {
+      toast.success("Deployed create2");
+      handleUpdateUserData();
     }
-  };
-
-  // 關閉對話框時重置狀態
-  useEffect(() => {
-    if (!isDialogOpen) {
-      refreshUserData();
-    }
-  }, [isDialogOpen]);
+  }, [deployCreate2Status, txHash]);
 
   useEffect(() => {
-    if (isSuccess && spenderAddress) {
-      handleSaveApproval();
+    const handleCreate2 = async () => {
+      if (!selectedNetwork) {
+        toast.error("Please select the network");
+        return;
+      }
+      if (!userData) {
+        toast.error("Please connect your wallet");
+        return;
+      }
+      const txHash = await deployCreate2({
+        userAddress: userData.address,
+        chainId: selectedNetwork.chainId,
+        salt: userData.salt,
+      });
+      setTxHash(txHash as string);
+    };
+    if (approveStatus === "Failed") {
+      toast.error("Approve failed");
     }
-    if (approveError) {
-      toast.error(`簽署失敗: ${approveError}`);
+    if (approveStatus === "Success") {
+      handleCreate2();
     }
-  }, [isSuccess, approveError, spenderAddress]);
+  }, [approveStatus]);
+
+  useEffect(() => {
+    const handleApprove = async () => {
+      if (!selectedNetwork) {
+        toast.error("Please select the network");
+        return;
+      }
+      await approveERC20({
+        spenderAddress: spenderAddress as string,
+        chainId: selectedNetwork.chainId,
+        tokenAddress: selectedNetwork.contractAddress,
+        useMax: true,
+      });
+    };
+
+    if (getSpenderAddressStatus === "Success") {
+      if (spenderAddress) {
+        toast.success("Get spender address success");
+        handleApprove();
+      }
+    }
+    if (getSpenderAddressStatus === "Failed") {
+      toast.error("Get spender address failed");
+    }
+  }, [getSpenderAddressStatus, spenderAddress]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -150,7 +182,7 @@ export default function AddNetworkDialogWidget() {
             <label htmlFor="network" className="text-sm font-medium">
               Select Network
             </label>
-            {isUserLoading ? (
+            {isLoadingUserData ? (
               <Skeleton className="w-full h-10" />
             ) : (
               <Select
@@ -162,7 +194,7 @@ export default function AddNetworkDialogWidget() {
                   )
                 }
                 value={selectedNetwork?.chainId.toString() || ""}
-                disabled={isApproving || isUpdating || isUserLoading}
+                disabled={isApproving || isUpdating || isLoadingUserData}
               >
                 <SelectTrigger id="network" className="w-full">
                   <SelectValue placeholder="Select Network" />
@@ -170,7 +202,7 @@ export default function AddNetworkDialogWidget() {
                 <SelectContent className="w-full">
                   {ChainTokenList.map((network) => (
                     <SelectItem
-                      // disabled={isNetworkAlreadyAdded(network)}
+                      disabled={isNetworkAlreadyAdded(network)}
                       key={network.chainId}
                       value={network.chainId.toString()}
                       className="flex items-center gap-2"
@@ -200,31 +232,26 @@ export default function AddNetworkDialogWidget() {
             )}
           </div>
 
-          {isSuccess && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
-              <div className="flex items-center">
-                <Check className="h-5 w-5 text-green-500 mr-2" />
-                <p className="text-sm font-medium">
-                  Authorization signature created
-                </p>
-              </div>
-              <p className="text-xs text-gray-500 truncate mt-1">
-                Signature: {txHash?.substring(0, 20)}...
-              </p>
-              {isUpdating && (
-                <div className="flex items-center mt-2 text-sm text-blue-500">
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving authorization data...
-                </div>
-              )}
-              {isSuccess && !isUpdating && (
-                <div className="flex items-center mt-2 text-sm text-green-500">
-                  <Check className="h-4 w-4 mr-2" />
-                  Authorization saved, will close automatically
-                </div>
-              )}
-            </div>
-          )}
+          <InteractionStatusMessage
+            status={getSpenderAddressStatus}
+            pendingMessage="Getting spender address..."
+            successMessage={`Spender address: ${spenderAddress}`}
+            errorMessage="Getting spender address failed"
+          />
+
+          <InteractionStatusMessage
+            status={approveStatus}
+            pendingMessage="Approving with USDC..."
+            successMessage="Approved with USDC"
+            errorMessage="Approving with USDC failed"
+          />
+
+          <InteractionStatusMessage
+            status={deployCreate2Status}
+            pendingMessage="Deploying create2..."
+            successMessage="Deployed create2"
+            errorMessage="Deploying create2 failed"
+          />
         </div>
 
         <DialogFooter>
@@ -234,16 +261,16 @@ export default function AddNetworkDialogWidget() {
             </Button>
           </DialogClose>
           <Button
-            onClick={handleApproveSign}
-            disabled={isApproving || isUpdating}
+            disabled={isApproving || isUpdating || !selectedNetwork}
+            onClick={onSubmit}
           >
             {isApproving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Signing...
+                Processing...
               </>
             ) : (
-              "Sign authorization"
+              "Enable Network"
             )}
           </Button>
         </DialogFooter>

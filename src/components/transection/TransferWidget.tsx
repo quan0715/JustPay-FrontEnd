@@ -13,16 +13,16 @@ import { useState } from "react";
 import { ChainToken, getChainTokenDataByName } from "@/models/token";
 import { Key, KeyValueDataCard, Value, Action } from "../key-value-data-card";
 import { useUserTokenBalance } from "@/hooks/useUserTokenBalance";
-import { useWalletClient } from "wagmi";
 import { cn } from "@/lib/utils";
 import { ArrowDown } from "lucide-react";
 import { toast } from "sonner";
-import { useUserData } from "@/hooks/useUserData";
+import { useUser } from "@/hooks/useUserData";
 import { ConfirmTransactionDialog } from "./ConfirmTransactionDialog";
 import { SignResult } from "@/hooks/useJustPaySign";
 import { ChainChip } from "../dappComponent/ChainChip";
 import { ChainTokenList } from "@/models/token";
 import { SignProxyOffChainTransaction } from "@/models/transaction";
+import { useEffect } from "react";
 
 export function TransferWidget() {
   const [recipientAddress, setRecipientAddress] = useState<string>("");
@@ -30,9 +30,12 @@ export function TransferWidget() {
   const [recipientTargetChain, setRecipientTargetChain] = useState<string>(
     ChainTokenList[0].network
   );
-  const { data: walletClient } = useWalletClient();
-  const { data: userData, isLoading: isLoadingUserData } = useUserData();
-  const { totalBalance } = useUserTokenBalance();
+  const { userData, isLoadingUserData } = useUser();
+  const {
+    fetchAllTokenBalances,
+    isLoading: isBalancesLoading,
+    totalBalance,
+  } = useUserTokenBalance();
 
   // 確認對話框狀態
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -79,7 +82,7 @@ export function TransferWidget() {
 
     // 設置交易數據
     setTransactionSignData({
-      senderAddress: walletClient?.account.address || "",
+      senderAddress: userData?.address || "",
       recipientAddress,
       amount,
       sourceChain: sourceChainIds as ChainToken[],
@@ -113,6 +116,15 @@ export function TransferWidget() {
     }
     return true;
   };
+
+  useEffect(() => {
+    if (!isLoadingUserData) {
+      fetchAllTokenBalances(
+        userData?.address || "",
+        userData?.allowances.map((allowance) => allowance.chainId) || []
+      );
+    }
+  }, [isLoadingUserData]);
 
   return (
     <div className="space-y-6 max-w-screen-sm mx-auto">
@@ -153,7 +165,7 @@ export function TransferWidget() {
           >
             <Key>{"Sender"}</Key>
             <Value className="text-lg font-bold text-ellipsis overflow-hidden w-full text-gray-500">
-              {walletClient?.account.address}
+              {userData?.address}
             </Value>
           </KeyValueDataCard>
           <KeyValueDataCard

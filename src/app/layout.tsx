@@ -5,6 +5,7 @@ import RainbowKitProvider from "@/providers/RainbowKitProvider";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
+import { UserProvider } from "@/providers/UserProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -37,9 +38,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <RainbowKitProvider>
-            <Navbar />
-            {children}
-            <Toaster />
+            <UserProvider>
+              <Navbar />
+              {children}
+              <Toaster />
+            </UserProvider>
           </RainbowKitProvider>
         </ThemeProvider>
       </body>

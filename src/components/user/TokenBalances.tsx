@@ -1,20 +1,13 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import {
   KeyValueDataCard,
   Key,
   Value,
   Action,
 } from "@/components/key-value-data-card";
-
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useUserData } from "@/hooks/useUserData";
+import { useEffect } from "react";
+import { useUser } from "@/hooks/useUserData";
 import AddNetworkDialogWidget from "./AddNetworkDialogWidget";
 import { getChainTokenDataByName } from "@/models/token";
 import Image from "next/image";
@@ -25,10 +18,7 @@ function formatAmount(amount: string): string {
     // 將 wei 轉換為可讀的數字
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return "0.00";
-
-    // 將 wei 值除以 10^6 (USDC 的 decimals 為 6)
-    const formattedAmount = (numericAmount / 1_000_000).toFixed(2);
-    return formattedAmount;
+    return numericAmount.toFixed(2);
   } catch (error) {
     console.error("Formatting amount error:", error);
     return "0.00";
@@ -36,26 +26,23 @@ function formatAmount(amount: string): string {
 }
 
 export function TokenBalances() {
-  const { data, isLoading } = useUserData();
-  const { address, isAuthenticated } = useAuth();
+  const { userData } = useUser();
   const {
     balances,
+    fetchAllTokenBalances,
     isLoading: isBalancesLoading,
     totalBalance,
   } = useUserTokenBalance();
 
-  if (!isAuthenticated || !address) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Total USDC Balance</CardTitle>
-          <CardDescription>
-            Please connect your wallet and complete verification
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  useEffect(() => {
+    if (userData?.allowances && userData.allowances.length > 0) {
+      console.log("allowances", userData.allowances);
+      fetchAllTokenBalances(
+        userData.address,
+        userData.allowances.map((allowance) => allowance.chainId)
+      );
+    }
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -64,19 +51,21 @@ export function TokenBalances() {
         {isBalancesLoading ? (
           <Skeleton className="w-64 h-24 m-4" />
         ) : (
-          <h1 className="text-6xl font-thin py-4 ">USDC ${totalBalance}</h1>
+          <h1 className="text-6xl font-thin py-4 ">
+            USDC ${formatAmount(totalBalance)}
+          </h1>
         )}
         <AddNetworkDialogWidget />
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {!data?.allowances?.length && !isLoading ? (
+        {!userData?.allowances?.length && !isBalancesLoading ? (
           <p className="text-center col-span-full text-gray-500 py-4">
             No allowances added yet, please click the &quot;Add Network&quot;
             button to add
           </p>
         ) : (
-          data?.allowances?.map((allowance, index) => {
+          userData?.allowances?.map((allowance, index) => {
             const networkConfig = getChainTokenDataByName(allowance.chainName);
             return networkConfig ? (
               <KeyValueDataCard
@@ -88,7 +77,9 @@ export function TokenBalances() {
                   {allowance.chainName}
                 </Key>
                 <Value className="text-xl font-thin">
-                  {formatAmount(balances[allowance.chainName]?.raw || "0.00")}{" "}
+                  {formatAmount(
+                    balances[allowance.chainId]?.formatted || "0.00"
+                  )}{" "}
                   USDC
                 </Value>
                 <Action>

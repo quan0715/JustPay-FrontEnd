@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import { ChainToken } from "@/models/token";
 import { getChainTokenDataByChainId } from "@/models/token";
 import { executeProxyDepositForBurn } from "@/app/_actions/burnProxy";
 import { createSignatureTransaction } from "@/app/_actions/signatureTransactionAction";
-// 合約地址
-// const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_JUSTPAY_SPENDER_ADDRESS;
 
-// 簽名狀態類型
 export type SignStatus = "idle" | "pending" | "success" | "error";
 
 // 簽名結果接口
@@ -39,7 +35,7 @@ export function useJustPaySign() {
   }: {
     sourceChains: {
       amount: bigint;
-      sourceChain: ChainToken;
+      sourceChainId: number;
     }[];
     destinationChainId: number;
     targetAddress?: string;
@@ -59,9 +55,7 @@ export function useJustPaySign() {
 
       // 如果未提供目標地址，使用簽名者地址
       const targetAddr = targetAddress || signerAddress;
-      const sourceChainIds = sourceChains.map(
-        (chain) => chain.sourceChain.chainId
-      );
+      const sourceChainIds = sourceChains.map((chain) => chain.sourceChainId);
 
       // 將金額字符串轉換為整數（使用USDC的6位小數）
       const amountEach = sourceChains.map((chain) => {
