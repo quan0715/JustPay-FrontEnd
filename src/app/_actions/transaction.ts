@@ -167,6 +167,10 @@ export async function executeSignatureTransaction({
     return;
   }
 
+  if (transaction.status !== "signed") {
+    return;
+  }
+
   await Promise.all(
     transaction.tokenTransferLogs.map(async (log, index) => {
       if (

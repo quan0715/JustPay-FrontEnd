@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { getUserData } from "@/app/_actions/userDataAction";
+import { getUserData } from "@/app/_actions/userRepo";
 import User from "@/models/user";
 import { useContext } from "react";
 import { UserContext } from "@/providers/UserProvider";

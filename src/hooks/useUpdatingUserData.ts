@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { updateUserData } from "@/app/_actions/userDataAction";
+import { updateUserData } from "@/app/_actions/userRepo";
 import User from "@/models/user";
 export default function useUpdatingUserData() {
   const [isUpdating, setIsUpdating] = useState(false);

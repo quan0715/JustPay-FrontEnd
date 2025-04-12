@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
-import { getUserData, createUserData } from "@/app/_actions/userDataAction";
+import { getUserData, createUserData } from "@/app/_actions/userRepo";
 declare module "next-auth" {
   interface Session {
     address?: string;
