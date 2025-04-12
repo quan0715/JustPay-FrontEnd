@@ -66,6 +66,9 @@ async function WriteContractWithOperator<T extends FunctionFragment>(
     signer
   );
 
+  // log all args
+  console.log(functionName, args);
+
   try {
     const tx = await contract[functionName](
       ...(Array.isArray(args) ? args : [args])
@@ -75,6 +78,7 @@ async function WriteContractWithOperator<T extends FunctionFragment>(
   } catch (error: unknown) {
     const errorMsg =
       error instanceof Error ? error.message : "Unexpected error occurred";
+    console.error(errorMsg);
     throw new Error(errorMsg);
   }
 }

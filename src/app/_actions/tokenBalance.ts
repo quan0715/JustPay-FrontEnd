@@ -2,17 +2,8 @@
 import { ethers } from "ethers";
 import { getUSDCMetadata } from "@/models/token";
 import { ReadContract } from "@/app/_actions/contractAction";
+import { TokenBalanceResult } from "@/models/balance";
 
-export interface TokenBalanceResult {
-  chainId: number;
-  raw: string;
-  formatted: string;
-  decimals: number;
-  usdValue: string;
-  error?: string;
-}
-
-// 獲取代幣餘額
 export async function fetchTokenBalances(
   ownerAddress: string,
   chainId: number

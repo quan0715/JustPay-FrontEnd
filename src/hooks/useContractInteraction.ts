@@ -190,3 +190,68 @@ export function useContractWriteWithOperator() {
     errorMessage,
   };
 }
+
+type AbiType =
+  | "uint256"
+  | "uint256[]"
+  | "address"
+  | "address[]"
+  | "string"
+  | "string[]"
+  | "bool"
+  | "bool[]";
+
+type AbiValue = number | number[] | string | string[] | boolean | boolean[];
+
+export function useContractSign() {
+  const [status, setStatus] = useState<ContractInteractionStatus>("Idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function signMessage(
+    types: AbiType[],
+    values: AbiValue[]
+  ): Promise<string | null> {
+    setStatus("Pending");
+    setErrorMessage(null);
+
+    try {
+      if (!window.ethereum) {
+        throw new Error("No wallet detected");
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+
+      const messageHash = ethers.keccak256(
+        ethers.AbiCoder.defaultAbiCoder().encode(types, values)
+      );
+
+      const signature = await signer.signMessage(ethers.getBytes(messageHash));
+      setStatus("Success");
+      return signature;
+    } catch (error: unknown) {
+      setStatus("Failed");
+      const errorMsg =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      setErrorMessage(errorMsg);
+      return null;
+    }
+  }
+
+  function reset() {
+    setStatus("Idle");
+    setErrorMessage(null);
+  }
+
+  return {
+    signMessage,
+    status,
+    isIdle: status === "Idle",
+    isPending: status === "Pending",
+    isSuccess: status === "Success",
+    isFailed: status === "Failed",
+    errorMessage,
+    reset,
+  };
+}

@@ -1,22 +1,3 @@
-import { ChainToken } from "./token";
-export type SignProxyOffChainTransaction = {
-  amount: string;
-  sourceChain: ChainToken[];
-  senderAddress: string;
-  recipientAddress: string;
-  destinationChain: ChainToken;
-};
-export type BurnProxyTransaction = {
-  amount: string;
-  sourceChain: ChainToken[];
-  destinationDomain: number;
-  mintRecipient: string;
-  burnToken: string;
-  destinationCaller: string;
-  maxFee: number;
-  minFinalityThreshold: number;
-};
-
 // 新的代理存款燃燒交易模型
 export type ProxyDepositForBurnTransaction = {
   burnToken: string; // 代幣地址
@@ -30,12 +11,52 @@ export type ProxyDepositForBurnTransaction = {
   signature: string; // 簽名
 };
 
-// 簽名結果交易
-export type SignedTransaction = {
+export type USDCTransferTransactionMetaDataInput = {
+  senderAddress: string;
+  expectedProxyDepositForBurnTransactions: ExpectedProxyDepositForBurnTransaction[];
+  destinationChainId: number;
+  recipientAddress: string;
+};
+
+export type MessageSignature = {
   sourceChainIds: number[];
   amountsEach: string[];
   nonces: number[];
+  expirationTime: number;
   destinationChainId: number;
-  targetAddress: string;
-  signature: string;
+  recipientAddress: string;
 };
+
+export type USDCTransferTransactionMetaData = {
+  senderAddress: string;
+  spenderAddress: string;
+} & MessageSignature;
+
+export type ExpectedProxyDepositForBurnTransaction = {
+  sourceChainId: number;
+  amount: string;
+};
+
+export type TransferStatus = "draft" | "pending" | "ready" | "expired" | "done";
+
+export type TransactionType = "proxyDepositForBurn" | "erc20Transfer";
+
+export type TokenTransferLog = {
+  sourceChainId: number;
+  amount: string;
+  recipientAddress: string;
+  txHash: string;
+  transactionType: TransactionType;
+  status: TransferStatus;
+};
+
+export type USDCTransferTransactionEntity = {
+  signature: string;
+  metaData: USDCTransferTransactionMetaData;
+  tokenTransferLogs?: TokenTransferLog[];
+};
+
+export type USDCTransferTransactionModel = {
+  id: string;
+  status: "signed" | "expired" | "done" | "failed";
+} & USDCTransferTransactionEntity;

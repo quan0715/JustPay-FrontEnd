@@ -18,28 +18,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Check, Loader2 } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useEnableNetwork } from "@/hooks/useEnableNetwork";
-import { ChainToken, ChainTokenList } from "@/models/token";
 import { ethers } from "ethers";
-import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import useUpdatingUserData from "@/hooks/useUpdatingUserData";
 import { InteractionStatusMessage } from "@/components/contract/InteractionStatusMessage";
 import { useUser } from "@/hooks/useUserData";
 import { useRouter } from "next/navigation";
-
+import {
+  TOKEN_METADATA_MAP,
+  TokenMetadata,
+  getUSDCMetadata,
+} from "@/models/token";
+import { ChainSelectItem } from "@/components/dappComponent/ChainChip";
+import { Label } from "../ui/label";
 export default function AddNetworkDialogWidget() {
   const { userData, isLoadingUserData } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<ChainToken | null>(
-    null
-  );
+  const [selectedChainId, setSelectedChainId] = useState<number | null>(null);
   const [spenderAddress, setSpenderAddress] = useState<string>("");
   const [txHash, setTxHash] = useState<string>("");
   const { isUpdating, updateUser } = useUpdatingUserData();
-
   const {
     getSpenderAddress,
     getSpenderAddressStatus,
@@ -54,14 +55,14 @@ export default function AddNetworkDialogWidget() {
     approveStatus === "Pending" ||
     getSpenderAddressStatus === "Pending";
 
-  const isNetworkAlreadyAdded = (network: ChainToken) => {
+  const isNetworkAlreadyAdded = (chain: TokenMetadata) => {
     return userData?.allowances.some(
-      (allowance) => allowance.chainName === network.network
+      (allowance) => allowance.chainId === chain.chainId
     );
   };
 
   const onSubmit = async () => {
-    if (!selectedNetwork) {
+    if (!selectedChainId) {
       toast.error("Please select the network");
       return;
     }
@@ -70,7 +71,7 @@ export default function AddNetworkDialogWidget() {
       return;
     }
     const spenderAddress = await getSpenderAddress({
-      chainId: selectedNetwork.chainId,
+      chainId: selectedChainId,
       userAddress: userData.address,
       salt: userData?.salt,
     });
@@ -79,9 +80,10 @@ export default function AddNetworkDialogWidget() {
     }
   };
 
+  // 更新用戶數據
   useEffect(() => {
     const handleUpdateUserData = async () => {
-      if (!selectedNetwork) {
+      if (!selectedChainId) {
         toast.error("Please select the network");
         return;
       }
@@ -95,10 +97,10 @@ export default function AddNetworkDialogWidget() {
         allowances: [
           ...userData.allowances,
           {
-            chainId: selectedNetwork.chainId,
-            chainName: selectedNetwork.network,
+            chainId: selectedChainId,
+            chainName: getUSDCMetadata(selectedChainId).chainName,
             txHash: txHash,
-            tokenAddress: selectedNetwork.contractAddress,
+            tokenAddress: getUSDCMetadata(selectedChainId).tokenContractAddress,
             amount: ethers.MaxUint256.toString(),
             spenderAddress: spenderAddress,
           },
@@ -114,9 +116,10 @@ export default function AddNetworkDialogWidget() {
     }
   }, [deployCreate2Status, txHash]);
 
+  // 部署create2合約
   useEffect(() => {
     const handleCreate2 = async () => {
-      if (!selectedNetwork) {
+      if (!selectedChainId) {
         toast.error("Please select the network");
         return;
       }
@@ -126,7 +129,7 @@ export default function AddNetworkDialogWidget() {
       }
       const txHash = await deployCreate2({
         userAddress: userData.address,
-        chainId: selectedNetwork.chainId,
+        chainId: selectedChainId,
         salt: userData.salt,
       });
       setTxHash(txHash as string);
@@ -139,16 +142,17 @@ export default function AddNetworkDialogWidget() {
     }
   }, [approveStatus]);
 
+  // 批准USDC
   useEffect(() => {
     const handleApprove = async () => {
-      if (!selectedNetwork) {
+      if (!selectedChainId) {
         toast.error("Please select the network");
         return;
       }
       await approveERC20({
         spenderAddress: spenderAddress as string,
-        chainId: selectedNetwork.chainId,
-        tokenAddress: selectedNetwork.contractAddress,
+        chainId: selectedChainId,
+        tokenAddress: getUSDCMetadata(selectedChainId).tokenContractAddress,
         useMax: true,
       });
     };
@@ -179,52 +183,33 @@ export default function AddNetworkDialogWidget() {
 
         <div className="space-y-4 py-4 w-full">
           <div className="space-y-2 w-full">
-            <label htmlFor="network" className="text-sm font-medium">
+            <Label htmlFor="network" className="text-sm font-medium">
               Select Network
-            </label>
+            </Label>
             {isLoadingUserData ? (
               <Skeleton className="w-full h-10" />
             ) : (
               <Select
-                onValueChange={(value) =>
-                  setSelectedNetwork(
-                    ChainTokenList.find(
-                      (network) => network.chainId.toString() === value
-                    ) || null
-                  )
-                }
-                value={selectedNetwork?.chainId.toString() || ""}
+                onValueChange={(value) => setSelectedChainId(Number(value))}
+                value={selectedChainId?.toString() || ""}
                 disabled={isApproving || isUpdating || isLoadingUserData}
               >
-                <SelectTrigger id="network" className="w-full">
+                <SelectTrigger id="network" className="w-full h-fit p-2">
                   <SelectValue placeholder="Select Network" />
                 </SelectTrigger>
-                <SelectContent className="w-full">
-                  {ChainTokenList.map((network) => (
+                <SelectContent className="w-full h-fit p-2">
+                  {TOKEN_METADATA_MAP.USDC.map((chain) => (
                     <SelectItem
-                      disabled={isNetworkAlreadyAdded(network)}
-                      key={network.chainId}
-                      value={network.chainId.toString()}
-                      className="flex items-center gap-2"
+                      disabled={isNetworkAlreadyAdded(chain)}
+                      key={chain.chainId}
+                      value={chain.chainId.toString()}
+                      className="flex items-center gap-2 p-2"
                     >
-                      <div className="flex items-center gap-2">
-                        {network.image && (
-                          <Image
-                            src={network.image}
-                            alt={network.network}
-                            className="w-4 h-4"
-                            width={16}
-                            height={16}
-                          />
-                        )}
-                        <span>{network.network}</span>
-                        {isNetworkAlreadyAdded(network) && (
-                          <>
-                            <Check className="w-4 h-4 text-green-500" />
-                            <span>Authorized</span>
-                          </>
-                        )}
-                      </div>
+                      <ChainSelectItem
+                        label={chain.chainName}
+                        tokenImage={chain.tokenImage}
+                        isAuthorized={isNetworkAlreadyAdded(chain)}
+                      />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -261,7 +246,7 @@ export default function AddNetworkDialogWidget() {
             </Button>
           </DialogClose>
           <Button
-            disabled={isApproving || isUpdating || !selectedNetwork}
+            disabled={isApproving || isUpdating || !selectedChainId}
             onClick={onSubmit}
           >
             {isApproving ? (

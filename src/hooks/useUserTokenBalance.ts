@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  fetchTokenBalances,
-  TokenBalanceResult,
-} from "@/app/_actions/tokenBalance";
+import { fetchTokenBalances } from "@/app/_actions/tokenBalance";
+import { TokenBalanceResult } from "@/models/balance";
 
 export function useUserTokenBalance() {
   const [total, setTotal] = useState("0.0");

@@ -31,20 +31,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <RainbowKitProvider>
+        <RainbowKitProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
             <UserProvider>
               <Navbar />
               {children}
               <Toaster />
             </UserProvider>
-          </RainbowKitProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </RainbowKitProvider>
       </body>
     </html>
   );

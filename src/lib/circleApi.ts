@@ -96,6 +96,7 @@ export async function getTransactionStatus(
     console.log(
       `${CIRCLE_API_BASE_URL}/${domain}?transactionHash=${transactionId}`
     );
+
     const response = await makeRateLimitedRequest(
       `${CIRCLE_API_BASE_URL}/${domain}?transactionHash=${transactionId}`,
       {
@@ -107,37 +108,20 @@ export async function getTransactionStatus(
     );
 
     if (!response.ok) {
-      // console.log("Circle API 回應錯誤:", response);
-      throw new Error(`Circle API 回應錯誤: ${response.status}`);
+      console.error("Circle API 回應錯誤:", response);
+      return null;
     }
 
     const data = await response.json();
 
     // 將 Circle API 回應轉換為我們的標準格式
     return {
-      status: mapCircleStatus(data.messages[0].status),
+      status: data.messages[0].status,
       attestation: data.messages[0].attestation,
       message: data.messages[0].message,
     };
   } catch (error) {
     console.error("取得 Circle 交易狀態失敗:", error);
     return null;
-  }
-}
-
-/**
- * 將 Circle API 狀態映射到我們的標準狀態
- */
-function mapCircleStatus(circleStatus: string): CircleTransactionStatus {
-  switch (circleStatus) {
-    case "pending":
-    case "processing":
-      return "pending";
-    case "complete":
-      return "complete";
-    case "failed":
-      return "failed";
-    default:
-      return "pending";
   }
 }

@@ -81,7 +81,7 @@ export const getChainTokenDataByChainId = (chainId: number) => {
 };
 
 type TokenSymbol = "USDC";
-type TokenMetadata = {
+export type TokenMetadata = {
   chainId: number;
   chainName: string;
   tokenContractAddress: string;
@@ -109,15 +109,15 @@ export const TOKEN_METADATA_MAP: Record<TokenSymbol, TokenMetadata[]> = {
       tokenTransmitterContractAddress:
         "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
     },
-    {
-      chainId: 59141,
-      chainName: "Linea-Sepolia",
-      tokenContractAddress: "0xfece4462d57bd51a6a552365a011b95f0e16d9b7",
-      tokenImage: "/logo/linea-logo.png",
-      tokenCCTVDomain: 11,
-      tokenTransmitterContractAddress:
-        "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
-    },
+    // {
+    //   chainId: 59141,
+    //   chainName: "Linea-Sepolia",
+    //   tokenContractAddress: "0xfece4462d57bd51a6a552365a011b95f0e16d9b7",
+    //   tokenImage: "/logo/linea-logo.png",
+    //   tokenCCTVDomain: 11,
+    //   tokenTransmitterContractAddress:
+    //     "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
+    // },
     {
       chainId: 43113,
       chainName: "Avalanche-Fuji",
@@ -130,7 +130,7 @@ export const TOKEN_METADATA_MAP: Record<TokenSymbol, TokenMetadata[]> = {
   ],
 };
 
-export const getUSDCMetadata = (chainId: number) => {
+export const getUSDCMetadata = (chainId: number): TokenMetadata => {
   const metadata = TOKEN_METADATA_MAP["USDC"].find(
     (metadata) => metadata.chainId === chainId
   );

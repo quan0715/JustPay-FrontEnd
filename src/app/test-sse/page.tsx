@@ -8,8 +8,6 @@ export default function SseDemoPage() {
   useEffect(() => {
     // 連線到我們剛建立的 SSE 路由
     const eventSource = new EventSource("/api/sse");
-
-    // 當收到訊息時
     eventSource.onmessage = (event) => {
       setLogs((prev) => [...prev, event.data]);
     };

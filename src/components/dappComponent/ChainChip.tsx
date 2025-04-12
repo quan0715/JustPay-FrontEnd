@@ -1,25 +1,45 @@
-import { type ChainToken } from "@/models/token";
 import Image from "next/image";
+import { CheckCircle } from "lucide-react";
 export function ChainChip({
-  withLabel,
-  chainToken,
+  label,
+  tokenImage,
+  isAuthorized = false,
 }: {
-  withLabel: boolean;
-  chainToken: ChainToken;
+  label?: string;
+  tokenImage?: string;
+  isAuthorized?: boolean;
 }) {
   return (
     <div className="flex items-center gap-3 rounded-lg bg-gray-100 p-2">
-      {withLabel && (
-        <p className="text-sm font-medium text-gray-500">
-          {chainToken.network}
-        </p>
+      {label && <p className="text-sm font-medium text-gray-500">{label}</p>}
+      <Image src={tokenImage || ""} alt={label || ""} width={16} height={16} />
+      {isAuthorized && (
+        <>
+          <CheckCircle className="w-4 h-4 text-green-500" />
+        </>
       )}
-      <Image
-        src={chainToken.image || ""}
-        alt={chainToken.network}
-        width={16}
-        height={16}
-      />
+    </div>
+  );
+}
+
+export function ChainSelectItem({
+  label,
+  tokenImage,
+  isAuthorized = false,
+}: {
+  label?: string;
+  tokenImage?: string;
+  isAuthorized?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      {label && <p className="text-sm font-medium text-gray-500">{label}</p>}
+      <Image src={tokenImage || ""} alt={label || ""} width={16} height={16} />
+      {isAuthorized && (
+        <>
+          <CheckCircle className="w-4 h-4 text-green-500" />
+        </>
+      )}
     </div>
   );
 }
