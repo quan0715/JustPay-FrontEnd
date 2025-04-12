@@ -12,6 +12,7 @@ import {
   Network,
 } from "lucide-react";
 import { ReactNode } from "react";
+import { CCTVTransferButton } from "@/components/transaction/ActionButton";
 
 // 狀態標籤顏色映射
 const statusColorMap: Record<string, string> = {
@@ -200,7 +201,10 @@ export default async function TransferPage({
                       className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="grid grid-cols-2 gap-4">
-                        <InfoItem label="鏈 ID" value={`Chain ${index + 1}`} />
+                        <InfoItem
+                          label="鏈 ID"
+                          value={`Chain ${log.sourceChainId}`}
+                        />
                         <InfoItem label="狀態" value={log.status} />
                         <InfoItem
                           label="交易類型"
@@ -217,6 +221,16 @@ export default async function TransferPage({
                           value={log.txHash}
                           className="col-span-2"
                         />
+                        {log.status === "pending" && (
+                          <div className="col-span-2 flex">
+                            <CCTVTransferButton
+                              transactionLog={log}
+                              index={index}
+                              transactionId={signature_id}
+                              destinationChainId={destinationChainId}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
