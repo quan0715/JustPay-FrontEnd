@@ -29,6 +29,7 @@ export function useProxySign() {
       destinationChainId: data.destinationChainId,
       recipientAddress: data.recipientAddress,
     } as MessageSignature;
+    console.log("signData", signData);
     try {
       const signature = await signMessage(
         [

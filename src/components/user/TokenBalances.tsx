@@ -9,10 +9,11 @@ import {
 import { useEffect } from "react";
 import { useUser } from "@/hooks/useUserData";
 import AddNetworkDialogWidget from "./AddNetworkDialogWidget";
-import { getChainTokenDataByName } from "@/models/token";
 import Image from "next/image";
 import { useUserTokenBalance } from "@/hooks/useUserTokenBalance";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getUSDCMetadata } from "@/models/token";
+
 function formatAmount(amount: string): string {
   try {
     // 將 wei 轉換為可讀的數字
@@ -66,8 +67,8 @@ export function TokenBalances() {
           </p>
         ) : (
           userData?.allowances?.map((allowance, index) => {
-            const networkConfig = getChainTokenDataByName(allowance.chainName);
-            return networkConfig ? (
+            const chain = getUSDCMetadata(allowance.chainId);
+            return chain ? (
               <KeyValueDataCard
                 key={index}
                 orientation="horizontal"
@@ -84,8 +85,8 @@ export function TokenBalances() {
                 </Value>
                 <Action>
                   <Image
-                    src={networkConfig.image || ""}
-                    alt={allowance.chainName}
+                    src={chain.tokenImage || ""}
+                    alt={chain.chainName}
                     className="w-8 h-8"
                     width={20}
                     height={20}
