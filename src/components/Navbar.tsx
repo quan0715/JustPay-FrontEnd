@@ -44,12 +44,6 @@ export default function Navbar() {
             >
               Cross-Chain Transfer
             </Link>
-            <Link
-              href="/transactions"
-              className="transition-colors hover:text-foreground/80"
-            >
-              Transaction Records
-            </Link>
           </nav>
         </div>
 

@@ -114,7 +114,10 @@ export async function receiveMessage({
     return;
   }
 
-  if (transactionStatus.status == "pending") {
+  if (
+    transactionStatus.status == "pending" ||
+    transactionStatus.status == "pending_confirmations"
+  ) {
     console.log("交易狀態為pending，等待交易確認");
     return;
   }
@@ -171,37 +174,55 @@ export async function executeSignatureTransaction({
     return;
   }
 
-  await Promise.all(
-    transaction.tokenTransferLogs.map(async (log, index) => {
-      if (
-        log.transactionType !== "proxyDepositForBurn" ||
-        log.status !== "draft"
-      ) {
-        return;
-      }
-      const chain = getUSDCMetadata(log.sourceChainId);
-      const txHash = await executeProxyDepositForBurn({
-        spenderAddress: transaction.metaData.spenderAddress,
-        sourceChainId: log.sourceChainId,
-        burnToken: chain.tokenContractAddress,
-        messageSignature: transaction.metaData,
-        signature: transaction.signature,
-      });
-      //
-      if (!txHash) {
-        throw new Error("交易發送失敗");
-      }
-      await updateTransactionLog({
-        id: transactionId,
-        index: index,
-        update: {
-          ...log,
-          status: "pending",
-          txHash: txHash.transactionHash,
-        },
-      });
-    })
-  );
+  await updateTransaction({
+    id: transactionId,
+    update: {
+      status: "pending",
+    },
+  });
+  try {
+    await Promise.all(
+      transaction.tokenTransferLogs.map(async (log, index) => {
+        if (
+          log.transactionType !== "proxyDepositForBurn" ||
+          log.status !== "draft"
+        ) {
+          return;
+        }
+        const chain = getUSDCMetadata(log.sourceChainId);
+        const txHash = await executeProxyDepositForBurn({
+          spenderAddress: transaction.metaData.spenderAddress,
+          sourceChainId: log.sourceChainId,
+          burnToken: chain.tokenContractAddress,
+          messageSignature: transaction.metaData,
+          signature: transaction.signature,
+        });
+        //
+        if (!txHash) {
+          throw new Error("交易發送失敗");
+        }
+        await updateTransactionLog({
+          id: transactionId,
+          index: index,
+          update: {
+            ...log,
+            status: "pending",
+            txHash: txHash.transactionHash,
+          },
+        });
+      })
+    );
+  } catch (error) {
+    await updateTransaction({
+      id: transactionId,
+      update: {
+        status: "failed",
+      },
+    });
+    console.error("執行交易時發生錯誤:", error);
+    throw new Error("執行交易時發生錯誤");
+  }
+
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   while (true) {

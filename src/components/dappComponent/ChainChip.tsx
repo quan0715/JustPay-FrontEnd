@@ -10,8 +10,8 @@ export function ChainChip({
   isAuthorized?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-gray-100 p-2">
-      {label && <p className="text-sm font-medium text-gray-500">{label}</p>}
+    <div className="flex items-center gap-3 rounded-lg bg-foreground/5 p-2">
+      {label && <p className="text-sm font-medium">{label}</p>}
       <Image src={tokenImage || ""} alt={label || ""} width={16} height={16} />
       {isAuthorized && (
         <>
@@ -33,7 +33,7 @@ export function ChainSelectItem({
 }) {
   return (
     <div className="flex items-center gap-2">
-      {label && <p className="text-sm font-medium text-gray-500">{label}</p>}
+      {label && <p className="text-sm font-medium">{label}</p>}
       <Image src={tokenImage || ""} alt={label || ""} width={16} height={16} />
       {isAuthorized && (
         <>

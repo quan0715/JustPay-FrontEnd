@@ -57,8 +57,10 @@ const apiRateLimiter = new RateLimiter(10);
 
 // 交易狀態類型
 export type CircleTransactionStatus =
+  | "draft"
   | "pending"
   | "complete"
+  | "pending_confirmations"
   | "failed"
   | "confirmed";
 
@@ -108,8 +110,12 @@ export async function getTransactionStatus(
     );
 
     if (!response.ok) {
-      console.error("Circle API 回應錯誤:", response);
-      return null;
+      // console.error("Circle API 回應錯誤:", response);
+      return {
+        status: "draft",
+        attestation: "",
+        message: "",
+      };
     }
 
     const data = await response.json();
