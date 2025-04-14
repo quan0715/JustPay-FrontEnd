@@ -1,8 +1,7 @@
 "use server";
 import { getSignatureTransaction } from "@/app/_actions/transationRepo";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Hash, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ReactNode } from "react";
 // import { CCTVTransferButton } from "@/components/transaction/ActionButton";
 import { ChainChip } from "@/components/dappComponent/ChainChip";
@@ -10,13 +9,8 @@ import { getUSDCMetadata } from "@/models/token";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { AddressDisplay } from "@/components/AddressDisplay";
-// 狀態標籤顏色映射
-const statusColorMap: Record<string, string> = {
-  done: "bg-green-100 text-green-800 border-green-200",
-  signed: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  failed: "bg-red-100 text-red-800 border-red-200",
-  expired: "bg-gray-100 text-gray-800 border-gray-200",
-};
+import Link from "next/link";
+import { TransferDisplay } from "./TransferDisplay";
 
 export default async function TransferPage({
   params,
@@ -46,7 +40,6 @@ export default async function TransferPage({
   }
 
   const {
-    status,
     metaData: {
       sourceChainIds,
       amountsEach,
@@ -59,28 +52,17 @@ export default async function TransferPage({
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col justify-start items-start gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Hash className="h-6 w-6 text-blue-600" />
-              </div>
+          <div className="flex flex-col items-start justify-start">
+            <Link href="/" className="py-8 flex flex-row items-center gap-2">
+              <ArrowLeft className="h-6 w-6 text-gray-500 " />
+              <span className="text-gray-500">返回首頁</span>
+            </Link>
+            <div className="flex flex-row justify-start items-start gap-3">
               <div>
-                <h1 className="text-2xl font-bold">交易簽署資訊</h1>
-                <p className="text-sm text-gray-500">交易 ID: {signature_id}</p>
+                <h1 className="text-3xl font-bold">交易簽署資訊</h1>
+                <p className="text-md text-gray-500">交易 ID: {signature_id}</p>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={`px-3 py-1 ${statusColorMap[status] || "bg-gray-100"}`}
-            >
-              {status === "pending" && (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4" />
-                  <span>Pending</span>
-                </span>
-              )}
-              {status}
-            </Badge>
           </div>
           <Separator className="my-6" />
           <DataRow title="交易總金額">
@@ -122,6 +104,7 @@ export default async function TransferPage({
               <AddressDisplay
                 address={senderAddress}
                 chainId={sourceChainIds[0]}
+                type="address"
                 showFullAddress={false}
               />
             </DataRowItem>
@@ -138,51 +121,13 @@ export default async function TransferPage({
             <DataRowItem label="地址">
               <AddressDisplay
                 address={senderAddress}
-                chainId={sourceChainIds[0]}
+                chainId={destinationChainId}
+                type="address"
                 showFullAddress={false}
               />
             </DataRowItem>
           </DataRow>
-          {signatureTransaction.tokenTransferLogs &&
-            signatureTransaction.tokenTransferLogs.map((log, index) => (
-              <div key={index}>
-                <Separator className="my-6" />
-                <DataRow key={index} title={`跨鏈交易 ${index + 1}`}>
-                  <DataRowItem label="鏈 ID">
-                    <ChainChip
-                      key={log.sourceChainId}
-                      label={getUSDCMetadata(log.sourceChainId).chainName}
-                      tokenImage={getUSDCMetadata(log.sourceChainId).tokenImage}
-                    />
-                  </DataRowItem>
-                  <DataRowItem label="狀態">
-                    <Badge
-                      variant="outline"
-                      className={`px-3 py-1 ${
-                        statusColorMap[log.status] || "bg-gray-100"
-                      }`}
-                    >
-                      {log.status}
-                    </Badge>
-                  </DataRowItem>
-
-                  <DataRowItem label="金額">
-                    <p className="text-xl font-thin">
-                      {ethers.formatUnits(log.amount, 6)} USDC
-                    </p>
-                  </DataRowItem>
-                  {log.txHash && (
-                    <DataRowItem label="交易 Hash">
-                      <AddressDisplay
-                        address={log.txHash}
-                        chainId={log.sourceChainId}
-                        showFullAddress={false}
-                      />
-                    </DataRowItem>
-                  )}
-                </DataRow>
-              </div>
-            ))}
+          <TransferDisplay initialTransaction={signatureTransaction} />
         </div>
       </div>
     </div>
@@ -193,7 +138,7 @@ function DataRow({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex flex-col md:flex-row items-stretch justify-between gap-2">
       <h3 className="flex-1 text-2xl font-thin">{title}</h3>
-      <div className="shrink-0 h-[1px] w-full md:w-[1px] md:h-auto bg-foreground/10 md:mx-2" />
+      <div className="shrink-0 h-[1px] hidden md:block md:w-[1px] md:h-auto bg-foreground/10 md:mx-2" />
       <div className="flex-[2] flex flex-col justify-start items-start gap-2">
         {children}
       </div>

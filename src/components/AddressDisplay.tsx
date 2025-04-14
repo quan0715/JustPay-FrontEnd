@@ -8,28 +8,51 @@ interface AddressDisplayProps {
   address: string;
   chainId: number;
   showFullAddress?: boolean;
+  type?: "address" | "txHash";
 }
 
-const getExplorerUrl = (chainId: number, address: string): string => {
+const getExplorerUrl = (
+  chainId: number,
+  address: string,
+  type: "address" | "txHash"
+): string => {
   switch (chainId) {
     case 1: // Ethereum Mainnet
-      return `https://etherscan.io/address/${address}`;
+      return type === "address"
+        ? `https://etherscan.io/address/${address}`
+        : `https://etherscan.io/tx/${address}`;
     case 5: // Goerli
-      return `https://goerli.etherscan.io/address/${address}`;
+      return type === "address"
+        ? `https://goerli.etherscan.io/address/${address}`
+        : `https://goerli.etherscan.io/tx/${address}`;
     case 137: // Polygon
-      return `https://polygonscan.com/address/${address}`;
+      return type === "address"
+        ? `https://polygonscan.com/address/${address}`
+        : `https://polygonscan.com/tx/${address}`;
     case 80001: // Mumbai
-      return `https://mumbai.polygonscan.com/address/${address}`;
+      return type === "address"
+        ? `https://mumbai.polygonscan.com/address/${address}`
+        : `https://mumbai.polygonscan.com/tx/${address}`;
     case 11155111: // Sepolia
-      return `https://sepolia.etherscan.io/address/${address}`;
+      return type === "address"
+        ? `https://sepolia.etherscan.io/address/${address}`
+        : `https://sepolia.etherscan.io/tx/${address}`;
     case 84532: // Base Sepolia
-      return `https://sepolia.basescan.org/address/${address}`;
+      return type === "address"
+        ? `https://sepolia.basescan.org/address/${address}`
+        : `https://sepolia.basescan.org/tx/${address}`;
     case 43113: // Avalanche Fuji
-      return `https://testnet.snowtrace.io/address/${address}`;
+      return type === "address"
+        ? `https://testnet.snowtrace.io/address/${address}`
+        : `https://testnet.snowtrace.io/tx/${address}`;
     case 43114: // Avalanche Mainnet
-      return `https://snowtrace.io/address/${address}`;
+      return type === "address"
+        ? `https://snowtrace.io/address/${address}`
+        : `https://snowtrace.io/tx/${address}`;
     default:
-      return `https://etherscan.io/address/${address}`;
+      return type === "address"
+        ? `https://etherscan.io/address/${address}`
+        : `https://etherscan.io/tx/${address}`;
   }
 };
 
@@ -37,6 +60,7 @@ export const AddressDisplay = ({
   address,
   chainId,
   showFullAddress = false,
+  type = "address",
 }: AddressDisplayProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -70,7 +94,7 @@ export const AddressDisplay = ({
       </Button>
       <Button variant="ghost" size="icon" asChild className="h-8 w-8">
         <a
-          href={getExplorerUrl(chainId, address)}
+          href={getExplorerUrl(chainId, address, type)}
           target="_blank"
           rel="noopener noreferrer"
         >
