@@ -10,6 +10,8 @@ import { getUSDCMetadata } from "@/models/token";
 import { ethers } from "ethers";
 import { AddressDisplay } from "@/components/AddressDisplay";
 import { PendingBadge } from "@/components/transaction/ActionButton";
+import { ERC20TransferButton } from "@/components/transaction/ERC20TransferButton";
+// import { CCTVTransferButton } from "@/components/transaction/CCTVTransferButton";
 
 // 狀態標籤顏色映射 (從 page.tsx 複製過來，因為 Client Component 無法直接存取 Server Component 的變數)
 const statusColorMap: Record<string, string> = {
@@ -73,7 +75,9 @@ export function TransferDisplay({ initialTransaction }: TransferDisplayProps) {
           if (updatedTransaction) {
             setTransaction(updatedTransaction);
             if (
-              ["done", "failed", "expired"].includes(updatedTransaction.status)
+              ["done", "failed", "expired", "readyToTransfer"].includes(
+                updatedTransaction.status
+              )
             ) {
               clearInterval(intervalId);
             }
@@ -111,6 +115,17 @@ export function TransferDisplay({ initialTransaction }: TransferDisplayProps) {
               {status}
             </Badge>
           )}
+        </DataRowItem>
+        <DataRowItem label="ERC20 轉帳">
+          <ERC20TransferButton
+            transactionId={signature_id}
+            targetAddress={transaction.metaData.recipientAddress}
+            targetChainId={transaction.metaData.destinationChainId}
+            totalAmount={transaction.metaData.amountsEach
+              .reduce((sum, amount) => sum + BigInt(amount), BigInt(0))
+              .toString()}
+            disabled={status === "pending" || status === "done"}
+          />
         </DataRowItem>
       </DataRow>
 
@@ -156,6 +171,14 @@ export function TransferDisplay({ initialTransaction }: TransferDisplayProps) {
                   />
                 </DataRowItem>
               )}
+              {/* <DataRowItem label="手動轉移">
+                <CCTVTransferButton
+                  transactionId={signature_id}
+                  transactionLog={log}
+                  index={index}
+                  destinationChainId={transaction.metaData.destinationChainId}
+                />
+              </DataRowItem> */}
             </DataRow>
           </div>
         ))}

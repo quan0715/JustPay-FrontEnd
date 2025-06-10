@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   reactStrictMode: false,
+  output: "standalone",
 };
 
 export default nextConfig;

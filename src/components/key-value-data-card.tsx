@@ -80,9 +80,9 @@ export function KeyValueDataCard({
   );
 
   if (!isLoading) {
-    if (keyChildren.length < 1) {
-      throw new Error("KeyValueDataCard must have at least one Key component");
-    }
+    // if (keyChildren.length < 1) {
+    //   throw new Error("KeyValueDataCard must have at least one Key component");
+    // }
 
     if (keyChildren.length > 1) {
       throw new Error("KeyValueDataCard must have only one Key component");

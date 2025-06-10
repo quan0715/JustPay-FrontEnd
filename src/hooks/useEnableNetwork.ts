@@ -17,8 +17,8 @@ const computeAddressAbi = [
 const deployCreate2Abi = [
   "function deploy(uint256 _salt_int, address signer, address operator) returns (address)",
 ];
-
-const FactoryAddress = "0x28d8501cFFA0C88D35A79a728428e8d82C748Bb0";
+const FactoryAddress = "0xdce81c84C153e25C20f58031cEaD6edaB8318813";
+// const FactoryAddress = "0x28d8501cFFA0C88D35A79a728428e8d82C748Bb0";
 const OperatorAddress = "0xBDAff86a8B9dD8E5dcb742C6CB8f9977E960A03B";
 export function useEnableNetwork() {
   const { status: approveStatus, writeContract: _approveERC20 } =
@@ -54,6 +54,7 @@ export function useEnableNetwork() {
       "computeAddress",
       [salt, userAddress as `0x${string}`, operatorAddress]
     );
+    console.log("spenderAddress", spenderAddress);
     return spenderAddress;
   }
 

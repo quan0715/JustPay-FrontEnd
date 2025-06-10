@@ -259,7 +259,7 @@ export async function executeSignatureTransaction({
   await updateTransaction({
     id: transactionId,
     update: {
-      status: "done",
+      status: "readyToTransfer",
     },
   });
 }

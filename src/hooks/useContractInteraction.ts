@@ -123,6 +123,7 @@ export function useContractWrite() {
       const tx = await contract[functionName](
         ...(Array.isArray(args) ? args : [args])
       );
+      console.log("tx", tx);
 
       if (waitForTx) {
         const receipt = await tx.wait();

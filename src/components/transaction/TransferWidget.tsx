@@ -22,8 +22,10 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { getExpectedProxyDepositForBurnTransactions } from "@/utils/prepareProxyAction";
 import { ConfirmTransactionDrawer } from "./ConfirmTransactionDrawer";
+import { useSearchParams } from "next/navigation";
 
 export function TransferWidget() {
+  const searchParams = useSearchParams();
   const [recipientAddress, setRecipientAddress] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -120,6 +122,32 @@ export function TransferWidget() {
       !isAmountValid()
     );
   };
+
+  // 處理 URL 參數
+  useEffect(() => {
+    const toAddress = searchParams.get("to");
+    const urlAmount = searchParams.get("amount");
+    const chainId = searchParams.get("chainId");
+
+    if (toAddress) {
+      setRecipientAddress(toAddress);
+    }
+
+    if (urlAmount) {
+      setAmount(urlAmount);
+    }
+
+    if (chainId) {
+      const chainIdNum = parseInt(chainId);
+      // 確保 chainId 在支援的鏈列表中
+      const supportedChainIds = TOKEN_METADATA_MAP.USDC.map(
+        (token) => token.chainId
+      );
+      if (supportedChainIds.includes(chainIdNum)) {
+        setRecipientTargetChainId(chainIdNum);
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchAllTokenBalances(

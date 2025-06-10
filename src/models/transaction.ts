@@ -58,5 +58,11 @@ export type USDCTransferTransactionEntity = {
 
 export type USDCTransferTransactionModel = {
   id: string;
-  status: "signed" | "pending" | "expired" | "done" | "failed";
+  status:
+    | "signed"
+    | "pending"
+    | "expired"
+    | "done"
+    | "failed"
+    | "readyToTransfer";
 } & USDCTransferTransactionEntity;

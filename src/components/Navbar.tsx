@@ -44,6 +44,12 @@ export default function Navbar() {
             >
               Cross-Chain Transfer
             </Link>
+            <Link
+              href="/receive"
+              className="transition-colors hover:text-foreground/80"
+            >
+              收款碼
+            </Link>
           </nav>
         </div>
 

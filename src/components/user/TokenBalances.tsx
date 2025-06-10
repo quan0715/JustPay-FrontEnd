@@ -30,20 +30,18 @@ export function TokenBalances() {
   const { userData } = useUser();
   const {
     balances,
+    aUsdcBalance,
     fetchAllTokenBalances,
     isLoading: isBalancesLoading,
     totalBalance,
   } = useUserTokenBalance();
 
   useEffect(() => {
-    if (userData?.allowances && userData.allowances.length > 0) {
-      console.log("allowances", userData.allowances);
-      fetchAllTokenBalances(
-        userData.address,
-        userData.allowances.map((allowance) => allowance.chainId)
-      );
+    if (userData) {
+      const chainIds = userData.allowances?.map((a) => a.chainId) ?? [];
+      fetchAllTokenBalances(userData.address, chainIds);
     }
-  }, []);
+  }, [userData]);
 
   return (
     <div className="space-y-4">
@@ -60,6 +58,26 @@ export function TokenBalances() {
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {aUsdcBalance && (
+          <KeyValueDataCard
+            orientation="horizontal"
+            isLoading={isBalancesLoading}
+          >
+            <Key className={`text-md font-medium`}>Base aUSDC</Key>
+            <Value className="text-xl font-thin">
+              {formatAmount(aUsdcBalance.formatted || "0.00")} aUSDC
+            </Value>
+            <Action>
+              <Image
+                src={"/logo/base-logo.png"}
+                alt={"Base chain"}
+                className="w-8 h-8"
+                width={20}
+                height={20}
+              />
+            </Action>
+          </KeyValueDataCard>
+        )}
         {!userData?.allowances?.length && !isBalancesLoading ? (
           <p className="text-center col-span-full text-gray-500 py-4">
             No allowances added yet, please click the &quot;Add Network&quot;

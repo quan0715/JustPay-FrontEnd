@@ -7,6 +7,8 @@ export function getNetworkRpcUrl(chainId: number): string {
   switch (chainId) {
     case 11155111:
       return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+    case 84531:
+      return `https://base-goerli.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
     case 84532:
       return `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
     case 59144:
